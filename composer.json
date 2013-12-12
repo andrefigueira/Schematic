@@ -1,5 +1,25 @@
 {
     "name": "mysql/schematic",
+    "description": "A simple MySQL migration management tool in PHP, create and update databases automatically with a config json file without having to use inbuilt ORM functions.",
+    "version": "1.1",
+    "keywords": [
+        "mysql",
+        "database",
+        "orm",
+        "php",
+        "migration",
+        "automation"
+    ],
+    "homepage": "https://github.com/andrefigueira/Schematic",
+    "licence": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "André Figueira",
+            "email": "andre.figueira@me.com",
+            "homepage": "http://www.andrefigueira.com",
+            "role": "Developer"
+        }
+    ],
     "autoload": {
 	    "psr-0": {
 		    "Core": "lib/",
