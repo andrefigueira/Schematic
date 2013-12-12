@@ -23,8 +23,8 @@
                         "length": "11",
                         "decimals": false,
                         "null": false,
-                        "unassigned": true,
-                        "index": "primary",
+                        "unsigned": true,
+                        "index": "PRIMARY KEY",
                         "autoIncrement": true,
                         "comment": "Id field for listing ids"
                     },
@@ -33,7 +33,7 @@
                         "length": "256",
                         "decimals": false,
                         "null": false,
-                        "unassigned": false,
+                        "unsigned": false,
                         "index": false,
                         "autoIncrement": false,
                         "comment": "The name of the product"
