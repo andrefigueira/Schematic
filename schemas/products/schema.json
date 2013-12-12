@@ -1,6 +1,6 @@
 {
     "schematic": {
-        "name": "Schematic products",
+        "name": "Quiqcart",
         "version": "1.0"
     },
     "connection": {
@@ -19,9 +19,7 @@
             "products": {
                 "fields": {
                     "id": {
-                        "type": "int",
-                        "length": "11",
-                        "decimals": false,
+                        "type": "int(11)",
                         "null": false,
                         "unsigned": true,
                         "index": "PRIMARY KEY",
@@ -29,21 +27,27 @@
                         "comment": "Id field for listing ids"
                     },
                     "name": {
-                        "type": "varchar",
-                        "length": "256",
-                        "null": false,
-                        "comment": "The name of the product"
+                        "type": "varchar(256)",
+                        "null": false
                     },
                     "description": {
-                        "type": "varchar",
-                        "length": "1024",
-                        "decimals": false,
+                        "type": "varchar(512)",
+                        "null": false
+                    },
+                    "price": {
+                        "type": "float",
+                        "null": false
+                    },
+                    "priceWas": {
+                        "type": "float",
                         "null": false
                     },
                     "image": {
-                        "type": "varchar",
-                        "length": "1024",
-                        "decimals": false,
+                        "type": "blob",
+                        "null": false
+                    },
+                    "date": {
+                        "type": "datetime",
                         "null": false
                     }
                 }

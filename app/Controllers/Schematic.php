@@ -247,7 +247,7 @@ class Schematic
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
 
             $addFieldSql .= '
-            `' . $field . '` ' . $fieldSettings->type . '(' . $fieldSettings->length . ') ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+            `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
 
             if($fieldSettings->index != '')
             {
@@ -262,14 +262,14 @@ class Schematic
             {
 
                 $updateFieldSql .= '
-                MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . '(' . $fieldSettings->length . ') ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+                MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
 
             }
             else
             {
 
                 $updateFieldSql .= '
-                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . '(' . $fieldSettings->length . ') ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
 
             }
 
