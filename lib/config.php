@@ -42,19 +42,19 @@ switch(trim(ENVIRONMENT))
 {
 
 	case 'localhost':	
-		define('BASE_URL', 'http://localhost/Quiqcart/');
+		define('BASE_URL', '');
 		define('DB_HOST', 'localhost');
 		define('DB_USER', 'root');
 		define('DB_PASS', 'root');
-		define('DB_NAME', 'quiqcart');
+		define('DB_NAME', '');
 	break;
 		
 	case 'live':
-		define('BASE_URL', 'http://andrefigueira.com/');
+		define('BASE_URL', '');
 		define('DB_HOST', 'localhost');
 		define('DB_USER', 'root');
 		define('DB_PASS', 'root');
-		define('DB_NAME', 'cms');
+		define('DB_NAME', '');
 	break;
 		
 	default:
