@@ -1,7 +1,6 @@
 <?php
 
 /**
- *
  * Schematic is a MySQL database creation and maintenance script, It allows you to define a schema in JSON and run a
  * simple script to do the creation or updates to your database, If you change your schema file and run the script it
  * will then run through and make the updates to the database.
@@ -170,7 +169,7 @@ class Schematic
 
             $this->db->select_db($this->schema->database->general->name);
 
-            $result = $this->db->query($this->sql);
+            $result = $this->db->multi_query($this->sql);
 
             if($result)
             {
@@ -184,6 +183,42 @@ class Schematic
                 throw new \Exception('Failed to generate schema: ' . $this->db->error);
 
             }
+
+        }
+
+    }
+
+    /**
+     * Checks the table of the database to see if the column passed already exists
+     *
+     * @param $table
+     * @param $field
+     * @return bool
+     * @throws \Exception
+     *
+     */
+    private function fieldExists($table, $field)
+    {
+
+        $result = $this->db->query('
+        SELECT *
+        FROM information_schema.COLUMNS
+        WHERE
+        TABLE_SCHEMA = "' . $this->schema->database->general->name . '"
+        AND TABLE_NAME = "' . $table . '"
+        AND COLUMN_NAME = "' . $field . '"
+        ');
+
+        if($result)
+        {
+
+            return (bool)$result->num_rows;
+
+        }
+        else
+        {
+
+            throw new \Exception('Failure in checking if column exists: '. $this->db->error);
 
         }
 
@@ -206,10 +241,10 @@ class Schematic
         foreach($settings->fields as $field => $fieldSettings)
         {
 
-            if(!$fieldSettings->index){ $fieldSettings->index = '';}
-            if($fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}
-            if($fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
-            if($fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}
+            if(!isset($fieldSettings->index)){ $fieldSettings->index = '';}
+            if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
+            if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
+            if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
 
             $addFieldSql .= '
             `' . $field . '` ' . $fieldSettings->type . '(' . $fieldSettings->length . ') ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
@@ -223,8 +258,20 @@ class Schematic
 
             }
 
-            $updateFieldSql .= '
-            MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . '(' . $fieldSettings->length . ') ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+            if($this->fieldExists($table, $field))
+            {
+
+                $updateFieldSql .= '
+                MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . '(' . $fieldSettings->length . ') ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+
+            }
+            else
+            {
+
+                $updateFieldSql .= '
+                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . '(' . $fieldSettings->length . ') ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+
+            }
 
         }
 
