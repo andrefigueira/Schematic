@@ -1,0 +1,11 @@
+{
+    "autoload": {
+	    "psr-0": {
+		    "Core": "lib/",
+		    "Controllers": "app/"
+	    }
+    },
+    "require": {
+	    "lib/curl": "dev-master"
+    }
+}

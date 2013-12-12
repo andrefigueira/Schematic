@@ -1,0 +1,45 @@
+{
+    "schematic": {
+        "name": "Schematic products",
+        "version": "1.0"
+    },
+    "connection": {
+        "host": "localhost",
+        "user": "root",
+        "pass": ""
+    },
+    "database": {
+        "general": {
+            "name": "schematic",
+            "charset": "utf8",
+            "collation": "utf8_general_ci",
+            "engine": "InnoDB"
+        },
+        "tables": {
+            "products": {
+                "fields": {
+                    "id": {
+                        "type": "int",
+                        "length": "11",
+                        "decimals": false,
+                        "null": false,
+                        "unassigned": true,
+                        "index": "primary",
+                        "autoIncrement": true,
+                        "comment": "Id field for listing ids"
+                    },
+                    "name": {
+                        "type": "varchar",
+                        "length": "256",
+                        "decimals": false,
+                        "null": false,
+                        "unassigned": false,
+                        "index": false,
+                        "autoIncrement": false,
+                        "comment": "The name of the product"
+                    }
+                }
+            }
+        }
+    }
+}
