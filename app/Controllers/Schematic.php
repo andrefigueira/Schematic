@@ -271,6 +271,8 @@ class Schematic
 
         $this->db->select_db($this->schema->database->general->name);
 
+        $this->deleteNonSchemaFields($table, $settings);
+
         $result = $this->db->query($query);
 
         @file_put_contents($table . '.sql', $query);
@@ -285,6 +287,59 @@ class Schematic
         {
 
             throw new \Exception('Failed to generate schema: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function deleteNonSchemaFields($table, $settings)
+    {
+
+        $this->db->select_db($this->schema->database->general->name);
+
+        $deleteSql = '';
+        $tableFields = $this->showfields($table);
+        $newFields = array();
+        $unschemedFields = array();
+
+        foreach($settings->fields as $field => $fieldSettings)
+        {
+
+            array_push($newFields, $field);
+
+        }
+
+        foreach($tableFields as $field)
+        {
+
+            if(!in_array($field, $newFields))
+            {
+
+                $deleteSql .= 'ALTER TABLE `' . $table . '` DROP `' .$field . '`;';
+
+                array_push($unschemedFields, $field);
+
+            }
+
+        }
+
+        if($deleteSql != '')
+        {
+
+            $result = $this->db->multi_query($deleteSql);
+
+            if($result)
+            {
+
+                echo 'Deleted Unschemed fields (' . implode(', ', $unschemedFields) . ')' .PHP_EOL;
+
+            }
+            else
+            {
+
+                throw new \Exception('Failed to delete unschemed fields: ' . $this->db->error);
+
+            }
 
         }
 
@@ -393,6 +448,37 @@ class Schematic
 
         if(!is_readable($dir)) return null;
         return (count(scandir($dir)) == 2);
+
+    }
+
+    public function showfields($table)
+    {
+
+        $this->db->select_db($this->schema->database->general->name);
+
+        $result = $this->db->query('SHOW COLUMNS FROM ' . $table);
+
+        if($result)
+        {
+
+            $resultsArray = array();
+
+            while($row = $result->fetch_object())
+            {
+
+                array_push($resultsArray, $row->Field);
+
+            }
+
+            return $resultsArray;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to check if table exists: ' . $this->db->error);
+
+        }
 
     }
 
