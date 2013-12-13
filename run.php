@@ -7,16 +7,32 @@ $schematic = new \Controllers\Schematic();
 try
 {
 
-    if($schematic->exists())
+    $directory = __DIR__ . '/schemas';
+
+    $dir = new DirectoryIterator($directory);
+
+    foreach($dir as $fileinfo)
     {
 
-        $schematic->generate();
+        $schematic->tableDir = $fileinfo->getFilename();
 
-    }
-    else
-    {
+        if(!$fileinfo->isDot())
+        {
 
-        throw new \Exception('No schematics exist...');
+            if($schematic->exists())
+            {
+
+                $schematic->generate();
+
+            }
+            else
+            {
+
+                throw new \Exception('No schematics exist...');
+
+            }
+
+        }
 
     }
 
