@@ -16,7 +16,7 @@
             "engine": "InnoDB"
         },
         "tables": {
-            "products": {
+            "users": {
                 "fields": {
                     "id": {
                         "type": "int(11)",
@@ -30,24 +30,24 @@
                         "type": "varchar(256)",
                         "null": false
                     },
-                    "description": {
-                        "type": "varchar(512)",
+                    "username": {
+                        "type": "varchar(256)",
                         "null": false
                     },
-                    "price": {
-                        "type": "float",
-                        "null": false
-                    },
-                    "priceWas": {
-                        "type": "float",
-                        "null": false
-                    },
-                    "image": {
-                        "type": "blob",
+                    "email": {
+                        "type": "varchar(256)",
                         "null": false
                     },
                     "date": {
-                        "type": "datetime",
+                        "type": "varchar(256)",
+                        "null": false
+                    },
+                    "profile": {
+                        "type": "varchar(256)",
+                        "null": false
+                    },
+                    "password": {
+                        "type": "varchar(1024)",
                         "null": false
                     }
                 }
