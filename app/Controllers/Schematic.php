@@ -22,6 +22,8 @@ class Schematic
     //The property which contains information of the schema
     private $schema;
 
+    public $tableDir = '';
+
     //The generated schema SQL
     public $sql = '';
 
@@ -55,13 +57,17 @@ class Schematic
     public function exists()
     {
 
-        if(is_dir($this->schemaDir))
+        if($this->tableDir != ''){ $this->tableDir = $this->tableDir . '/';}
+
+        $this->realSchemaDir = $this->schemaDir . $this->tableDir;
+
+        if(is_dir($this->realSchemaDir))
         {
 
-            if(!$this->isEmptyDir($this->schemaDir))
+            if(!$this->isEmptyDir($this->realSchemaDir))
             {
 
-                $files = scandir($this->schemaDir);
+                $files = scandir($this->realSchemaDir);
 
                 foreach($files as $file)
                 {
@@ -69,8 +75,8 @@ class Schematic
                     if($file != '.' && $file != '..')
                     {
 
-                        $specificSchemaDir = $this->schemaDir . $file;
-                        $specificSchemaConfFile = $specificSchemaDir . '/schema.json';
+                        $specificSchemaDir = $this->realSchemaDir . $file;
+                        $specificSchemaConfFile = $specificSchemaDir;
 
                         if(file_exists($specificSchemaConfFile))
                         {
@@ -94,7 +100,7 @@ class Schematic
                         else
                         {
 
-                            throw new \Exception('Schema json file does not exist');
+                            throw new \Exception('Schema json file does not exist: ' . $specificSchemaConfFile);
 
                         }
 
@@ -116,7 +122,7 @@ class Schematic
         else
         {
 
-            throw new \Exception('Schema folder does not exist');
+            throw new \Exception('Schema folder does not exist:' . $this->realSchemaDir);
 
         }
 
@@ -150,6 +156,163 @@ class Schematic
     }
 
     /**
+     * Creates the table if it doesn't exist
+     *
+     * @param $table
+     * @param $settings
+     * @throws \Exception
+     *
+     */
+    private function createTable($table, $settings)
+    {
+
+        $addFieldSql = '';
+        $indexesSql = '';
+
+        foreach($settings->fields as $field => $fieldSettings)
+        {
+
+            if(!isset($fieldSettings->index)){ $fieldSettings->index = '';}
+            if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
+            if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
+            if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
+
+            $addFieldSql .= '
+            `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+
+            if(isset($fieldSettings->index) && $fieldSettings->index != '')
+            {
+
+                $indexesSql .= '
+                ' . $fieldSettings->index . '(`' . $field . '`),';
+
+            }
+
+        }
+
+        if($indexesSql == ''){ $addFieldSql = substr($addFieldSql, 0, -1);}
+
+        $indexesSql = substr($indexesSql, 0, -1);
+
+        //Query to create the table if it doesn't exist indicating a first time run
+        $query = '
+        CREATE TABLE IF NOT EXISTS `'. $table . '` (
+          ' . $addFieldSql . '
+          ' . $indexesSql . '
+        ) ENGINE=' . $this->schema->database->general->engine . ' DEFAULT CHARSET=' . $this->schema->database->general->charset . ' COLLATE=' . $this->schema->database->general->collation . ';
+        ';
+
+        $this->db->select_db($this->schema->database->general->name);
+
+        $result = $this->db->query($query);
+
+        @file_put_contents($table . '.sql', $query);
+
+        if($result)
+        {
+
+            echo 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')' .PHP_EOL;
+
+        }
+        else
+        {
+
+            throw new \Exception('Failed to generate schema: ' . $this->db->error);
+
+        }
+
+    }
+
+    /**
+     * Update the table add columns which don't exist or modify existing columns
+     *
+     * @param $table
+     * @param $settings
+     * @throws \Exception
+     *
+     */
+    private function updateTable($table, $settings)
+    {
+
+        $updateFieldSql = '';
+
+        foreach($settings->fields as $field => $fieldSettings)
+        {
+
+            if(!isset($fieldSettings->index)){ $fieldSettings->index = '';}
+            if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
+            if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
+            if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
+
+            if($this->fieldExists($table, $field))
+            {
+
+                $updateFieldSql .= '
+                MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+
+            }
+            else
+            {
+
+                $updateFieldSql .= '
+                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+
+            }
+
+        }
+
+        $updateFieldSql = substr($updateFieldSql, 0, -1);
+
+        //Query to update the table only if it already exists
+        $query = '
+        ALTER TABLE `' . $table . '`
+        ' . $updateFieldSql . ';
+        ';
+
+        $this->db->select_db($this->schema->database->general->name);
+
+        $result = $this->db->query($query);
+
+        @file_put_contents($table . '.sql', $query);
+
+        if($result)
+        {
+
+            echo 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')' .PHP_EOL;
+
+        }
+        else
+        {
+
+            throw new \Exception('Failed to generate schema: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function tableExists($table)
+    {
+
+        $this->db->select_db($this->schema->database->general->name);
+
+        $result = $this->db->query('SHOW TABLES LIKE "' . $table . '"');
+
+        if($result)
+        {
+
+            return (bool)$result->num_rows;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to check if table exists: ' . $this->db->error);
+
+        }
+
+    }
+
+    /**
      * Sets up the MySQL connection, runs the table generation and builds the query then runs it
      *
      * @throws \Exception
@@ -163,24 +326,18 @@ class Schematic
         foreach($this->schema->database->tables as $table => $settings)
         {
 
-            $this->generateTableSql($table, $settings);
-
             $this->createDb();
 
-            $this->db->select_db($this->schema->database->general->name);
-
-            $result = $this->db->multi_query($this->sql);
-
-            if($result)
+            if($this->tableExists($table))
             {
 
-                echo 'Generated Schema Successfully';
+                $this->updateTable($table, $settings);
 
             }
             else
             {
 
-                throw new \Exception('Failed to generate schema: ' . $this->db->error);
+                $this->createTable($table, $settings);
 
             }
 
@@ -221,79 +378,6 @@ class Schematic
             throw new \Exception('Failure in checking if column exists: '. $this->db->error);
 
         }
-
-    }
-
-    /**
-     * Checks the schema and generates the SQL for creation based on it
-     *
-     * @param $table
-     * @param $settings
-     * @throws \Exception
-     *
-     */
-    public function generateTableSql($table, $settings)
-    {
-
-        $addFieldSql = '';
-        $updateFieldSql = '';
-
-        foreach($settings->fields as $field => $fieldSettings)
-        {
-
-            if(!isset($fieldSettings->index)){ $fieldSettings->index = '';}
-            if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
-            if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
-            if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
-
-            $addFieldSql .= '
-            `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
-
-            if($fieldSettings->index != '')
-            {
-
-                $addFieldSql .= '
-                ' . $fieldSettings->index . ' (`' . $field . '`),
-                ';
-
-            }
-
-            if($this->fieldExists($table, $field))
-            {
-
-                $updateFieldSql .= '
-                MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
-
-            }
-            else
-            {
-
-                $updateFieldSql .= '
-                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
-
-            }
-
-        }
-
-        $addFieldSql = substr($addFieldSql, 0, -1);
-        $updateFieldSql = substr($updateFieldSql, 0, -1);
-
-        //Query to create the table if it doesn't exist indicating a first time run
-        $this->sql .= '
-        CREATE TABLE IF NOT EXISTS `'. $table . '` (
-          ' . $addFieldSql . '
-        ) ENGINE=' . $this->schema->database->general->engine . ' DEFAULT CHARSET=' . $this->schema->database->general->charset . ' COLLATE=' . $this->schema->database->general->collation . ';
-        ';
-
-        //Query to update the table only if it already exists
-        $this->sql .= '
-        ALTER TABLE `' . $table . '`
-        ' . $updateFieldSql . '
-        ';
-
-        $put = @file_put_contents('test.sql', $this->sql);
-
-        if(!$put){ throw new \Exception('Unable to write test file');}
 
     }
 
