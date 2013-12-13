@@ -7,7 +7,7 @@
  *
  * @author <Andre Figueira> andre.figueira@me.com
  * @package Schematic
- * @version 1.2.2
+ * @version 1.2.3
  *
  */
 
@@ -31,6 +31,7 @@ class Schematic
     {
 
         $this->schemaDir = dirname(dirname(__DIR__)) . '/' . $this->dir . '/';
+        $this->log = new Log();
 
     }
 
@@ -143,6 +144,8 @@ class Schematic
         if($result)
         {
 
+            $this->log->write('Created database ' . $this->schema->database->general->name);
+
             return true;
 
         }
@@ -168,6 +171,7 @@ class Schematic
 
         $addFieldSql = '';
         $indexesSql = '';
+        $createdFieldsTable = PHP_EOL . '--------------------------------' . PHP_EOL;
 
         foreach($settings->fields as $field => $fieldSettings)
         {
@@ -180,6 +184,8 @@ class Schematic
             $addFieldSql .= '
             `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
 
+            $createdFieldsTable .= $field . '( ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ')' . PHP_EOL;
+
             if(isset($fieldSettings->index) && $fieldSettings->index != '')
             {
 
@@ -189,6 +195,8 @@ class Schematic
             }
 
         }
+
+        $createdFieldsTable .= '--------------------------------' . PHP_EOL;
 
         if($indexesSql == ''){ $addFieldSql = substr($addFieldSql, 0, -1);}
 
@@ -211,7 +219,11 @@ class Schematic
         if($result)
         {
 
-            echo 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')' .PHP_EOL;
+            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ') with fields:' . PHP_EOL . $createdFieldsTable;
+
+            $this->log->write($message);
+
+            echo $message . PHP_EOL;
 
         }
         else
@@ -235,6 +247,7 @@ class Schematic
     {
 
         $updateFieldSql = '';
+        $createdFieldsTable = PHP_EOL . '--------------------------------' . PHP_EOL;
 
         foreach($settings->fields as $field => $fieldSettings)
         {
@@ -243,6 +256,8 @@ class Schematic
             if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
+
+            $createdFieldsTable .= $field . '( ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ')' . PHP_EOL;
 
             if($this->fieldExists($table, $field))
             {
@@ -260,6 +275,8 @@ class Schematic
             }
 
         }
+
+        $createdFieldsTable .= '--------------------------------' . PHP_EOL;
 
         $updateFieldSql = substr($updateFieldSql, 0, -1);
 
@@ -280,7 +297,11 @@ class Schematic
         if($result)
         {
 
-            echo 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')' .PHP_EOL;
+            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')' . $createdFieldsTable;
+
+            $this->log->write($message);
+
+            echo $message . PHP_EOL;
 
         }
         else
@@ -331,7 +352,11 @@ class Schematic
             if($result)
             {
 
-                echo 'Deleted Unschemed fields (' . implode(', ', $unschemedFields) . ')' .PHP_EOL;
+                $message = 'Deleted Unschemed fields (' . implode(', ', $unschemedFields) . ')';
+
+                $this->log->write($message);
+
+                echo $message . PHP_EOL;
 
             }
             else
