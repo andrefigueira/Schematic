@@ -7,7 +7,7 @@
  *
  * @author <Andre Figueira> andre.figueira@me.com
  * @package Schematic
- * @version 1.2.3
+ * @version 1.2.4
  *
  */
 
@@ -15,6 +15,8 @@ namespace Controllers;
 
 class Schematic
 {
+
+    public $baseDir = '';
 
     //Default schema directory
     private $dir = 'schemas';
@@ -30,7 +32,9 @@ class Schematic
     public function __construct()
     {
 
-        $this->schemaDir = dirname(dirname(__DIR__)) . '/' . $this->dir . '/';
+        if($this->baseDir == ''){ $this->baseDir = dirname(dirname(__DIR__)) . '/';}
+
+        $this->schemaDir =  $this->baseDir . $this->dir . '/';
         $this->log = new Log();
 
     }
