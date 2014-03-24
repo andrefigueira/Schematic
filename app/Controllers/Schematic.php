@@ -7,7 +7,7 @@
  *
  * @author <Andre Figueira> andre.figueira@me.com
  * @package Schematic
- * @version 1.2.4
+ * @version 1.2.6
  *
  */
 

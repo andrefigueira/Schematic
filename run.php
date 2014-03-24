@@ -11,12 +11,12 @@ try
 
     $dir = new DirectoryIterator($directory);
 
-    foreach($dir as $fileinfo)
+    foreach($dir as $fileInfo)
     {
 
-        $schematic->tableDir = $fileinfo->getFilename();
+        $schematic->tableDir = $fileInfo->getFilename();
 
-        if(!$fileinfo->isDot())
+        if(!$fileInfo->isDot())
         {
 
             if($schematic->exists())
