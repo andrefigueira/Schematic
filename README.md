@@ -59,11 +59,27 @@ will stop running and throw and exception.
                             "type": "varchar(256)",
                             "null": false
                         }
+                        "productId": {
+                            "type": "int(11)",
+                            "null": false,
+                            "unsigned": true,
+                            "index": "INDEX",
+                            "foreignKey": {
+                                "table": "products",
+                                "field": "id",
+                                "on": {
+                                    "delete": "CASCADE",
+                                    "update": "CASCADE"
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
+###Note that foreign keys support is only available when first running the script to initially create your table
 
 #Running the update
 

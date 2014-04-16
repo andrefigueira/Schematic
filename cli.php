@@ -18,6 +18,10 @@ $args = new cli\Arguments(array(
         'run' => array(
             'description' => 'Runs the script and updates the database based on the schema files',
             'aliases' => array('r')
+        ),
+        'template' => array(
+            'description' => 'Creates a template schema.json file in the schema directory based on the default template',
+            'aliases' => array('t')
         )
     ),
     'strict' => false
@@ -53,6 +57,10 @@ if(isset($args['h']))
         array(
             '-v',
             'Get the version of MySQL Schematic running'
+        ),
+        array(
+            '-t',
+            'Create a template schema.json file with the name you pass into the schema folder'
         )
     );
 
@@ -113,6 +121,29 @@ elseif(isset($args['v']))
 
     cli\line('%b' . SOFTWARE_NAME . ' - Version: ' . VERSION . '%n' . PHP_EOL);
 
+}
+elseif(isset($args['template']))
+{
+
+    $newFileName = $args['template'] . '.json';
+    $newFilePath = './schemas/' . $newFileName;
+
+    if(file_exists($newFilePath))
+    {
+
+        cli\line('%k%1' . $newFileName . ' already exists! Cannot overwrite an existing schema file%n');
+
+    }
+    else
+    {
+
+        $content = @file_get_contents('./templates/schema.json');
+
+        $newTemplate = @file_put_contents($newFilePath, $content);
+
+        cli\line('%b' . 'Created new schema file in schemas folder called: ' . $newFileName . '%n' . PHP_EOL);
+
+    }
 }
 else
 {

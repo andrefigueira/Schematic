@@ -177,6 +177,7 @@ class Schematic
 
         $addFieldSql = '';
         $indexesSql = '';
+        $foreignKeysSql = '';
         $data = array();
 
         foreach($settings->fields as $field => $fieldSettings)
@@ -186,6 +187,19 @@ class Schematic
             if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
+
+            if(isset($fieldSettings->foreignKey))
+            {
+
+                $foreignKeysSql .= '
+                ,
+                FOREIGN KEY (' . $field . ')
+                REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
+                ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
+                ON UPDATE ' . $fieldSettings->foreignKey->on->update . '
+                ';
+
+            }
 
             $addFieldSql .= '
             `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
@@ -219,6 +233,7 @@ class Schematic
         CREATE TABLE IF NOT EXISTS `'. $table . '` (
           ' . $addFieldSql . '
           ' . $indexesSql . '
+          ' . $foreignKeysSql . '
         ) ENGINE=' . $this->schema->database->general->engine . ' DEFAULT CHARSET=' . $this->schema->database->general->charset . ' COLLATE=' . $this->schema->database->general->collation . ';
         ';
 
