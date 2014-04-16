@@ -1,0 +1,61 @@
+{
+    "schematic": {
+        "name": "Schematic",
+        "version": "1.0"
+    },
+    "connection": {
+        "host": "127.0.0.1",
+        "user": "root",
+        "pass": "root"
+    },
+    "database": {
+        "general": {
+            "name": "schematic",
+            "charset": "utf8",
+            "collation": "utf8_general_ci",
+            "engine": "InnoDB"
+        },
+        "tables": {
+            "productCategories": {
+                "fields": {
+                    "id": {
+                        "type": "int(11)",
+                        "null": false,
+                        "unsigned": true,
+                        "index": "PRIMARY KEY",
+                        "autoIncrement": true,
+                        "comment": "Id field for listing ids"
+                    },
+                    "categoriesId": {
+                        "type": "int(11)",
+                        "unsigned": true,
+                        "index": "INDEX",
+                        "null": false,
+                        "foreignKey": {
+                            "table": "categories",
+                            "field": "id",
+                            "on": {
+                                "delete": "CASCADE",
+                                "update": "CASCADE"
+                            }
+                        }
+                    },
+                    "productsId": {
+                        "type": "int(11)",
+                        "unsigned": true,
+                        "index": "INDEX",
+                        "null": false,
+                        "foreignKey": {
+                            "table": "products",
+                            "field": "id",
+                            "on": {
+                                "delete": "CASCADE",
+                                "update": "CASCADE"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
