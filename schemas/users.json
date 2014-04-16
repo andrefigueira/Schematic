@@ -6,7 +6,7 @@
     "connection": {
         "host": "127.0.0.1",
         "user": "root",
-        "pass": ""
+        "pass": "root"
     },
     "database": {
         "general": {
@@ -16,7 +16,7 @@
             "engine": "InnoDB"
         },
         "tables": {
-            "categories": {
+            "users": {
                 "fields": {
                     "id": {
                         "type": "int(11)",

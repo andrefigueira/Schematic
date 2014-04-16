@@ -1,0 +1,4 @@
+vendor
+logs
+sql
+composer.lock

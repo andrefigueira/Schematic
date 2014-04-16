@@ -6,7 +6,7 @@
     "connection": {
         "host": "127.0.0.1",
         "user": "root",
-        "pass": ""
+        "pass": "root"
     },
     "database": {
         "general": {
@@ -16,7 +16,7 @@
             "engine": "InnoDB"
         },
         "tables": {
-            "products": {
+            "settings": {
                 "fields": {
                     "id": {
                         "type": "int(11)",
@@ -26,28 +26,16 @@
                         "autoIncrement": true,
                         "comment": "Id field for listing ids"
                     },
-                    "name": {
+                    "type": {
                         "type": "varchar(256)",
                         "null": false
                     },
-                    "description": {
+                    "copyright": {
+                        "type": "varchar(256)",
+                        "null": false
+                    },
+                    "analytics": {
                         "type": "varchar(512)",
-                        "null": false
-                    },
-                    "price": {
-                        "type": "float",
-                        "null": false
-                    },
-                    "priceWas": {
-                        "type": "float",
-                        "null": false
-                    },
-                    "image": {
-                        "type": "blob",
-                        "null": false
-                    },
-                    "date": {
-                        "type": "datetime",
                         "null": false
                     }
                 }

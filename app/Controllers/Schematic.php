@@ -16,25 +16,39 @@ namespace Controllers;
 class Schematic
 {
 
+    /** @var string The base directory for the schematic install */
     public $baseDir = '';
 
-    //Default schema directory
+    /** @var string The default schema directory */
     private $dir = 'schemas';
 
-    //The property which contains information of the schema
+    /** @var The property which contains information of the schema */
     private $schema;
 
+    /** @var string The directory for the tables */
     public $tableDir = '';
 
-    //The generated schema SQL
+    /** @var string The generated schema SQL */
     public $sql = '';
 
+    /** @var string The default directory for the generated SQL */
+    public $sqlDir = './sql/';
+
+    /** @var string The real directory for the schema files */
+    private $realSchemaDir = '';
+
+    /** @var string The name of the schema file to load up */
+    public $schemaFile = '';
+
+    /**
+     * Set up the schema dir and create an instance of the log
+     */
     public function __construct()
     {
 
         if($this->baseDir == ''){ $this->baseDir = dirname(dirname(__DIR__)) . '/';}
 
-        $this->schemaDir =  $this->baseDir . $this->dir . '/';
+        $this->schemaDir = $this->baseDir . $this->dir . '/';
         $this->log = new Log();
 
     }
@@ -62,9 +76,7 @@ class Schematic
     public function exists()
     {
 
-        if($this->tableDir != ''){ $this->tableDir = $this->tableDir . '/';}
-
-        $this->realSchemaDir = $this->schemaDir . $this->tableDir;
+        $this->realSchemaDir = $this->schemaDir;
 
         if(is_dir($this->realSchemaDir))
         {
@@ -74,42 +86,32 @@ class Schematic
 
                 $files = scandir($this->realSchemaDir);
 
-                foreach($files as $file)
+                $specificSchemaDir = $this->realSchemaDir . $this->schemaFile;
+                $specificSchemaConfFile = $specificSchemaDir;
+
+                if(file_exists($specificSchemaConfFile))
                 {
 
-                    if($file != '.' && $file != '..')
+                    $this->schema = @file_get_contents($specificSchemaConfFile);
+
+                    if($this->schema)
                     {
 
-                        $specificSchemaDir = $this->realSchemaDir . $file;
-                        $specificSchemaConfFile = $specificSchemaDir;
-
-                        if(file_exists($specificSchemaConfFile))
-                        {
-
-                            $this->schema = @file_get_contents($specificSchemaConfFile);
-
-                            if($this->schema)
-                            {
-
-                                $this->schema = json_decode($this->schema);
-
-                            }
-                            else
-                            {
-
-                                throw new \Exception('Unable to load schema file');
-
-                            }
-
-                        }
-                        else
-                        {
-
-                            throw new \Exception('Schema json file does not exist: ' . $specificSchemaConfFile);
-
-                        }
+                        $this->schema = json_decode($this->schema);
 
                     }
+                    else
+                    {
+
+                        throw new \Exception('Unable to load schema file');
+
+                    }
+
+                }
+                else
+                {
+
+                    throw new \Exception('Schema json file does not exist: ' . $specificSchemaConfFile);
 
                 }
 
@@ -175,7 +177,7 @@ class Schematic
 
         $addFieldSql = '';
         $indexesSql = '';
-        $createdFieldsTable = PHP_EOL . '--------------------------------' . PHP_EOL;
+        $data = array();
 
         foreach($settings->fields as $field => $fieldSettings)
         {
@@ -188,8 +190,6 @@ class Schematic
             $addFieldSql .= '
             `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
 
-            $createdFieldsTable .= $field . '( ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ')' . PHP_EOL;
-
             if(isset($fieldSettings->index) && $fieldSettings->index != '')
             {
 
@@ -198,9 +198,17 @@ class Schematic
 
             }
 
-        }
+            array_push($data, array(
+                'table' => $table,
+                'index' => $fieldSettings->index,
+                'field' => $field,
+                'type' => $fieldSettings->type,
+                'null' => $fieldSettings->null,
+                'autoIncrement' => $fieldSettings->autoIncrement,
+                'unsigned' => $fieldSettings->unsigned
+            ));
 
-        $createdFieldsTable .= '--------------------------------' . PHP_EOL;
+        }
 
         if($indexesSql == ''){ $addFieldSql = substr($addFieldSql, 0, -1);}
 
@@ -218,7 +226,7 @@ class Schematic
 
         $result = $this->db->query($query);
 
-        @file_put_contents($table . '.sql', $query);
+        $this->createSqlFile($table, $query);
 
         if($result)
         {
@@ -227,7 +235,22 @@ class Schematic
 
             $this->log->write($message);
 
-            echo $message . PHP_EOL;
+            $headers = array(
+                'Table',
+                'Index',
+                'Field',
+                'Type',
+                'NULL',
+                'Auto Increment',
+                'Unsigned'
+            );
+
+            \cli\line('%b' . $message . '%n');
+
+            $table = new \cli\Table();
+            $table->setHeaders($headers);
+            $table->setRows($data);
+            $table->display();
 
         }
         else
@@ -236,6 +259,26 @@ class Schematic
             throw new \Exception('Failed to generate schema: ' . $this->db->error);
 
         }
+
+    }
+
+    private function createSqlFile($table, $query)
+    {
+
+        if(!is_dir($this->sqlDir))
+        {
+
+            $newDir = @mkdir($this->sqlDir);
+
+            if(!$newDir){ throw new \Exception('Unable to create new SQL directory: ' . $this->sqlDir);}
+
+        }
+
+        $file = $this->sqlDir . $table . '.sql';
+
+        $sql = @file_put_contents($file, $query);
+
+        if(!$sql){ throw new \Exception('Unable to create SQL file: ' . $file);}
 
     }
 
@@ -251,7 +294,8 @@ class Schematic
     {
 
         $updateFieldSql = '';
-        $createdFieldsTable = PHP_EOL . '--------------------------------' . PHP_EOL;
+
+        $data = array();
 
         foreach($settings->fields as $field => $fieldSettings)
         {
@@ -260,8 +304,6 @@ class Schematic
             if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
-
-            $createdFieldsTable .= $field . '( ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ')' . PHP_EOL;
 
             if($this->fieldExists($table, $field))
             {
@@ -278,9 +320,17 @@ class Schematic
 
             }
 
-        }
+            array_push($data, array(
+                'table' => $table,
+                'index' => $fieldSettings->index,
+                'field' => $field,
+                'type' => $fieldSettings->type,
+                'null' => $fieldSettings->null,
+                'autoIncrement' => $fieldSettings->autoIncrement,
+                'unsigned' => $fieldSettings->unsigned
+            ));
 
-        $createdFieldsTable .= '--------------------------------' . PHP_EOL;
+        }
 
         $updateFieldSql = substr($updateFieldSql, 0, -1);
 
@@ -296,16 +346,31 @@ class Schematic
 
         $result = $this->db->query($query);
 
-        @file_put_contents($table . '.sql', $query);
+        $this->createSqlFile($table, $query);
 
         if($result)
         {
 
-            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')' . $createdFieldsTable;
+            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')';
 
             $this->log->write($message);
 
-            echo $message . PHP_EOL;
+            $headers = array(
+                'Table',
+                'Index',
+                'Field',
+                'Type',
+                'NULL',
+                'Auto Increment',
+                'Unsigned'
+            );
+
+            \cli\line('%b' . $message . '%n');
+
+            $table = new \cli\Table();
+            $table->setHeaders($headers);
+            $table->setRows($data);
+            $table->display();
 
         }
         else
@@ -323,7 +388,7 @@ class Schematic
         $this->db->select_db($this->schema->database->general->name);
 
         $deleteSql = '';
-        $tableFields = $this->showfields($table);
+        $tableFields = $this->showFields($table);
         $newFields = array();
         $unschemedFields = array();
 
@@ -480,7 +545,7 @@ class Schematic
 
     }
 
-    public function showfields($table)
+    public function showFields($table)
     {
 
         $this->db->select_db($this->schema->database->general->name);

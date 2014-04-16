@@ -7,16 +7,16 @@ A MySQL schema generator in PHP define your schemas as JSON then run the script 
 
     {
         require: {
-            "mysql/schematic": "*"
+            "mysql/schematic": "1.*"
         }
     }
 
 #Schema format
 
-Schema is defined in JSON files, these must be stored in the schema folder under folders representing the table they are
+Schema is defined in JSON files, these must be stored in the schema folder in json files representing the table they are
 for, e.g.
 
-`/schemas/tablename/schema.json`
+`/schemas/schema.json`
 
 The schema file contains all of the configuration of the database in order to create it or amend it, see an example below.
 
@@ -67,12 +67,24 @@ will stop running and throw and exception.
 
 #Running the update
 
-Once you have everything set up in your schema files, open your command line, cd to the root of the schematic folder and
-type the following:
+Once you have everything set up in your schema files, open your command line, cd to the root of the schematic folder and type the following:
 
-`php run.php`
+`php cli.php`
 
-This will execute the script, if there are any failures it will throw exception indicating what the errors are, on success
-it prints out a message indicating what it's done.
+If you set the php file to executable with:
+
+`chmod +x cli.php`
+
+Then you should be able to run the update with:
+
+`./cli.php`
+
+Script options:
+
+`- r` Runs the MySQL Schematic exporter, creates the database or runs the updates based on the JSON schemas defined
+`- v` Prints the version of MySQL Schematic currently in use
+`- h` Shows the help menu
+
+This will execute the script, if there are any failures it will throw exception indicating what the errors are, on success it prints out a message indicating what it's done.
 
 The script also creates a log of all of the database changes which are made.
