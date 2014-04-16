@@ -44,9 +44,11 @@ class Log
         if(!file_exists($this->filePath))
         {
 
-            $newFile = @file_put_contents($this->filePath, '');
+            $handle = @fopen($this->filePath, 'w');
 
-            if(!$newFile){ throw new \Exception('Unable to create log file');}
+            if(!$handle){ throw new \Exception('Unable to create log file: ' . $this->filePath);}
+
+            fclose($handle);
 
         }
 
@@ -80,13 +82,20 @@ class Log
 
         $date = new \DateTime();
 
-        $logLine = $date->format('Y-m-d H:i:s') . PHP_EOL;
-        $logLine .= $message . PHP_EOL;
-        $logLine .= '--------------------------------------------------' .PHP_EOL . PHP_EOL;
+        $logLine = '[' . $date->format('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
+
+        if(!file_exists($this->filePath))
+        {
+
+            $file = @fopen($this->filePath, 'r');
+
+            if(!$file){ throw new \Exception('Unable to create log file: ' . $this->filePath);}
+
+        }
 
         $put = @file_put_contents($this->filePath, $logLine, FILE_APPEND);
 
-        if(!$put){ throw new \Exception('Unable to write to log');}
+        if(!$put){ throw new \Exception('Unable to write to log: ' . $this->filePath);}
 
         return true;
 
