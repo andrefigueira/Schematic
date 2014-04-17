@@ -8,7 +8,7 @@ date_default_timezone_set('UTC');
 define('APP_NAME', 'MySQL Schematic');
 
 //Version
-define('APP_VERSION', '1.3.0');
+define('APP_VERSION', '1.3.1');
 
 $args = new cli\Arguments(array(
     'flags' => array(
@@ -85,7 +85,7 @@ elseif(isset($args['run']))
 
         $schematic = new \Controllers\Schematic();
 
-        $directory = __DIR__ . '/schemas';
+        $directory = $_SERVER['PWD'] . '/schemas';
 
         $dir = new DirectoryIterator($directory);
 
