@@ -14,7 +14,7 @@ A MySQL schema generator in PHP define your schemas as JSON then run the script 
 #Schema format
 
 Schema is defined in JSON files, these must be stored in the schema folder in json files representing the table they are
-for, e.g.
+for, e.g. (Make sure that you create the schema folder in the root of your project)
 
 `/schemas/schema.json`
 
@@ -85,22 +85,25 @@ will stop running and throw and exception.
 
 Once you have everything set up in your schema files, open your command line, cd to the root of the schematic folder and type the following:
 
-`php cli.php`
+`php vendor/mysql/schematic/cli.php`
 
 If you set the php file to executable with:
 
-`chmod +x cli.php`
+`chmod +x vendor/mysql/schematic/cli.php`
 
 Then you should be able to run the update with:
 
-`./cli.php`
+`./vendor/mysql/schematic/cli.php`
 
-Script options:
-
-`- r` Runs the MySQL Schematic exporter, creates the database or runs the updates based on the JSON schemas defined
-`- v` Prints the version of MySQL Schematic currently in use
-`- h` Shows the help menu
+You could also consider creating an alias for it so that you don't need to type it every time that much, and also possibly clone the repo instead of including it as a dependency which would mean your alias could be a global one so you would use the exact same one everywhere.
 
 This will execute the script, if there are any failures it will throw exception indicating what the errors are, on success it prints out a message indicating what it's done.
 
 The script also creates a log of all of the database changes which are made.
+
+Script options:
+
+- `-r` Runs the MySQL Schematic exporter, creates the database or runs the updates based on the JSON schemas defined
+- `-v` Prints the version of MySQL Schematic currently in use
+- `-t` Creates a new schema.json template in your schema directory e.g. `php vendor/mysql/schematic/cli.php -t products`
+- `-h` Shows the help menu
