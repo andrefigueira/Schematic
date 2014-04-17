@@ -1,4 +1,7 @@
 vendor
+vendor/
+vendor/*
+schemas
 logs
 sql
 composer.lock
