@@ -23,7 +23,7 @@ class Schematic
     private $dir = 'schemas';
 
     /** @var The property which contains information of the schema */
-    private $schema;
+    public $schema;
 
     /** @var string The directory for the tables */
     public $tableDir = '';
@@ -62,6 +62,13 @@ class Schematic
     {
 
         $this->db = new \mysqli($this->schema->connection->host, $this->schema->connection->user, $this->schema->connection->pass);
+
+        if($this->db->connect_errno)
+        {
+
+            throw new \Exception($this->db->connect_error);
+
+        }
 
     }
 
@@ -103,7 +110,7 @@ class Schematic
                     else
                     {
 
-                        throw new \Exception('Unable to load schema file');
+                        throw new \Exception('Unable to load schema file: ' . $specificSchemaConfFile);
 
                     }
 
@@ -277,7 +284,7 @@ class Schematic
 
     }
 
-    private function createSqlFile($table, $query)
+    public function createSqlFile($table, $query)
     {
 
         if(!is_dir($this->sqlDir))
@@ -294,6 +301,8 @@ class Schematic
         $sql = @file_put_contents($file, $query);
 
         if(!$sql){ throw new \Exception('Unable to create SQL file: ' . $file);}
+
+        return true;
 
     }
 
