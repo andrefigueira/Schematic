@@ -85,7 +85,7 @@ elseif(isset($args['run']))
 
         $schematic = new \Controllers\Schematic();
 
-        $directory = __DIR__ . '/schemas';
+        $directory = $_SERVER['PWD'] . '/schemas';
 
         $dir = new DirectoryIterator($directory);
 
