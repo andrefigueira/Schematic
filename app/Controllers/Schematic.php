@@ -246,7 +246,7 @@ class Schematic
         if($result)
         {
 
-            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ') with fields:' . PHP_EOL . $createdFieldsTable;
+            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')';
 
             $this->log->write($message);
 
