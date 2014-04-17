@@ -3,6 +3,8 @@ MySQL Schematic
 
 A MySQL schema generator in PHP define your schemas as JSON then run the script to generate your database or maintain it.
 
+[![Build Status](https://travis-ci.org/andrefigueira/Schematic.svg?branch=master)](https://travis-ci.org/andrefigueira/Schematic)
+
 #Install via Composer
 
     {
