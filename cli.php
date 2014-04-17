@@ -8,7 +8,7 @@ date_default_timezone_set('UTC');
 define('APP_NAME', 'MySQL Schematic');
 
 //Version
-define('APP_VERSION', '1.3.1');
+define('APP_VERSION', '1.3.2');
 
 $args = new cli\Arguments(array(
     'flags' => array(
