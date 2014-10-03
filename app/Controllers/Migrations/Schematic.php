@@ -13,32 +13,38 @@
 
 namespace Controllers\Migrations;
 
-class Schematics
+class Schematic
 {
 
     /** @var string The base directory for the schematic install */
-    public $baseDir = '';
+    protected $baseDir = '';
 
     /** @var string The default schema directory */
-    private $dir = 'schemas';
+    protected $schemaDir = '';
 
     /** @var The property which contains information of the schema */
-    public $schema;
+    protected $schema;
 
     /** @var string The directory for the tables */
-    public $tableDir = '';
+    protected $tableDir = '';
 
     /** @var string The generated schema SQL */
-    public $sql = '';
+    protected $sql = '';
 
     /** @var string The default directory for the generated SQL */
-    public $sqlDir = './sql/';
+    protected $sqlDir = './sql/';
 
     /** @var string The real directory for the schema files */
-    private $realSchemaDir = '';
+    protected $realSchemaDir = '';
 
     /** @var string The name of the schema file to load up */
-    public $schemaFile = '';
+    protected $schemaFile = '';
+
+    protected $db;
+
+    protected $environment;
+
+    protected $environmentConfigs;
 
     /**
      * Set up the schema dir and create an instance of the log
@@ -46,10 +52,56 @@ class Schematics
     public function __construct()
     {
 
-        if($this->baseDir == ''){ $this->baseDir = dirname(dirname(__DIR__)) . '/';}
-
-        $this->schemaDir = $this->baseDir . $this->dir . '/';
         $this->log = new Log();
+
+    }
+
+    public function setDir($dir)
+    {
+
+        $this->schemaDir = $dir;
+
+        return $this;
+
+    }
+
+    public function setEnvironmentConfigs($environment)
+    {
+
+        $this->environment = $environment;
+
+        $this->bindEnvironmentConfigs();
+
+        return $this;
+
+    }
+
+    private function bindEnvironmentConfigs()
+    {
+
+        $environmentPath = $this->schemaDir . 'config/';
+        $environmentFile = $environmentPath . $this->environment . '.json';
+
+        if(($environmentFile))
+        {
+
+            $this->environmentConfigs = @file_get_contents($environmentFile);
+            $this->environmentConfigs = json_decode($this->environmentConfigs);
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to load environment configs file: ' . $environmentFile);
+
+        }
+
+    }
+
+    public function setSchemaFile($schemaFile)
+    {
+
+        $this->schemaFile = $schemaFile;
 
     }
 
@@ -61,14 +113,9 @@ class Schematics
     public function connect()
     {
 
-        $this->db = new \mysqli($this->schema->connection->host, $this->schema->connection->user, $this->schema->connection->pass);
+        $this->db = new \mysqli($this->environmentConfigs->host, $this->environmentConfigs->user, $this->environmentConfigs->pass);
 
-        if($this->db->connect_errno)
-        {
-
-            throw new \Exception($this->db->connect_error);
-
-        }
+        if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
 
     }
 
@@ -136,7 +183,7 @@ class Schematics
         else
         {
 
-            throw new \Exception('Schema folder does not exist:' . $this->realSchemaDir);
+            throw new \Exception('Schema folder does not exist: ' . $this->realSchemaDir);
 
         }
 
@@ -257,23 +304,6 @@ class Schematics
 
             $this->log->write($message);
 
-            $headers = array(
-                'Table',
-                'Index',
-                'Field',
-                'Type',
-                'NULL',
-                'Auto Increment',
-                'Unsigned'
-            );
-
-            \cli\line('%b' . $message . '%n');
-
-            $table = new \cli\Table();
-            $table->setHeaders($headers);
-            $table->setRows($data);
-            $table->display();
-
         }
         else
         {
@@ -378,23 +408,6 @@ class Schematics
             $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')';
 
             $this->log->write($message);
-
-            $headers = array(
-                'Table',
-                'Index',
-                'Field',
-                'Type',
-                'NULL',
-                'Auto Increment',
-                'Unsigned'
-            );
-
-            \cli\line('%b' . $message . '%n');
-
-            $table = new \cli\Table();
-            $table->setHeaders($headers);
-            $table->setRows($data);
-            $table->display();
 
         }
         else

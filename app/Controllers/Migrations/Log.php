@@ -5,7 +5,7 @@
  *
  */
 
-namespace Controllers;
+namespace Controllers\Migrations;
 
 class Log
 {
