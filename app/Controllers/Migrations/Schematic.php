@@ -11,9 +11,9 @@
  *
  */
 
-namespace Controllers;
+namespace Controllers\Migrations;
 
-class Schematic
+class Schematics
 {
 
     /** @var string The base directory for the schematic install */
