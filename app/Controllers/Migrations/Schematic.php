@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Schematic is a MySQL database creation and maintenance script, It allows you to define a schema in JSON and run a
  * simple script to do the creation or updates to your database, If you change your schema file and run the script it
@@ -12,6 +11,9 @@
  */
 
 namespace Controllers\Migrations;
+
+use Controllers\Database\DatabaseInterface;
+use Controllers\Logger\LogInterface;
 
 class Schematic
 {
@@ -42,17 +44,19 @@ class Schematic
 
     protected $db;
 
+    protected $dbAdapter;
+
     protected $environment;
 
     protected $environmentConfigs;
 
-    /**
-     * Set up the schema dir and create an instance of the log
-     */
-    public function __construct()
+    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter)
     {
 
-        $this->log = new Log();
+        $this->log = $log;
+        $this->dbAdapter = $dbAdapter;
+
+        return $this;
 
     }
 
@@ -88,6 +92,8 @@ class Schematic
             $this->environmentConfigs = @file_get_contents($environmentFile);
             $this->environmentConfigs = json_decode($this->environmentConfigs);
 
+            $this->setDbAdapterConfigs();
+
         }
         else
         {
@@ -105,17 +111,21 @@ class Schematic
 
     }
 
-    /**
-     * Creates a connection to mysql and sets the mysql object to a db property so it's available to the methods
-     *
-     * @internal param $db
-     */
-    public function connect()
+    public function getSchema()
     {
 
-        $this->db = new \mysqli($this->environmentConfigs->host, $this->environmentConfigs->user, $this->environmentConfigs->pass);
+        return $this->schema;
 
-        if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
+    }
+
+    private function setDbAdapterConfigs()
+    {
+
+        $this->dbAdapter
+            ->setHost($this->environmentConfigs->host)
+            ->setUsername($this->environmentConfigs->user)
+            ->setPassword($this->environmentConfigs->pass)
+            ->connect();
 
     }
 
@@ -137,8 +147,6 @@ class Schematic
 
             if(!$this->isEmptyDir($this->realSchemaDir))
             {
-
-                $files = scandir($this->realSchemaDir);
 
                 $specificSchemaDir = $this->realSchemaDir . $this->schemaFile;
                 $specificSchemaConfFile = $specificSchemaDir;
@@ -199,22 +207,7 @@ class Schematic
     private function createDb()
     {
 
-        $result = $this->db->query('CREATE DATABASE IF NOT EXISTS `' . $this->schema->database->general->name . '`');
-
-        if($result)
-        {
-
-            $this->log->write('Created database ' . $this->schema->database->general->name);
-
-            return true;
-
-        }
-        else
-        {
-
-            throw new \Exception('Unable to create database: ' . $this->db->error);
-
-        }
+        return $this->dbAdapter->createDatabase($this->schema->database->general->name);
 
     }
 
@@ -229,6 +222,7 @@ class Schematic
     private function createTable($table, $settings)
     {
 
+        /** @var TYPE_NAME $addFieldSql */
         $addFieldSql = '';
         $indexesSql = '';
         $foreignKeysSql = '';
@@ -507,12 +501,21 @@ class Schematic
     public function generate()
     {
 
-        $this->connect();
-
         foreach($this->schema->database->tables as $table => $settings)
         {
 
-            $this->createDb();
+            if($this->createDb())
+            {
+
+                $this->log->write('Created database ' . $this->schema->database->general->name);
+
+            }
+            else
+            {
+
+                throw new \Exception('Unable to create database');
+
+            }
 
             if($this->tableExists($table))
             {
@@ -608,6 +611,38 @@ class Schematic
         {
 
             throw new \Exception('Unable to check if table exists: ' . $this->db->error);
+
+        }
+
+    }
+
+    public function run()
+    {
+
+        $dir = new \DirectoryIterator($this->schemaDir);
+
+        foreach($dir as $fileInfo)
+        {
+
+            $this->setSchemaFile($fileInfo->getFilename());
+
+            if(!$fileInfo->isDot() && $fileInfo->getFilename() != 'config')
+            {
+
+                if($this->exists())
+                {
+
+                    $this->generate();
+
+                }
+                else
+                {
+
+                    throw new \Exception('No schematics exist...');
+
+                }
+
+            }
 
         }
 

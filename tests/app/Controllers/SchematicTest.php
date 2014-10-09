@@ -3,15 +3,28 @@
 class SchematicTest extends PHPUnit_Framework_TestCase
 {
 
+    private $schematic;
+
+    public function setUp()
+    {
+
+        $log = new \Controllers\Logger\Log();
+
+        $this->schematic = new \Controllers\Migrations\Schematic($log);
+
+    }
+
     public function testJsonCanBeReadFromSchemaFolder()
     {
 
-        $schematic = new \Controllers\Schematic();
-        $schematic->schemaDir = './schemas/';
-        $schematic->schemaFile = 'schema.json';
+        $schematic = $this->schematic;
+        $schematic
+            ->setDir('./schemas/')
+            ->setSchemaFile('schema.json');
+
         $schematic->exists();
 
-        $decodedJsonObject = $schematic->schema;
+        $decodedJsonObject = $schematic->getSchema();
 
         $this->assertObjectHasAttribute('schematic', $decodedJsonObject);
 
@@ -20,7 +33,7 @@ class SchematicTest extends PHPUnit_Framework_TestCase
     public function testCanCreateNewSqlFile()
     {
 
-        $schematic = new \Controllers\Schematic();
+        $schematic = $this->schematic;
         $sqlFileCreation = $schematic->createSqlFile('test', 'test content');
 
         $this->assertTrue($sqlFileCreation);

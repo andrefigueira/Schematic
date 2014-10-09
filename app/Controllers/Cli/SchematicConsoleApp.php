@@ -2,6 +2,8 @@
 
 namespace Controllers\Cli;
 
+use Controllers\Database\Adapters\MysqlAdapter;
+use Controllers\Logger\Log;
 use Controllers\Migrations\Schematic;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -44,41 +46,32 @@ class SchematicConsoleApp extends Command
 
         $debug = $input->getOption('debug');
 
+        $database = 'mysql';
+
+        switch($database)
+        {
+
+            case 'mysql':
+                $db = new MysqlAdapter();
+                break;
+
+            default:
+                throw new \Exception('Must be valid adapter.. e.g. mysql');
+
+        }
+
         $output->writeln('<info>Beginning migrations</info>');
 
-        $schematic = new Schematic();
+        $log = new Log();
+
+        $schematic = new Schematic($log, $db);
         $schematic
             ->setDir($directory)
             ->setEnvironmentConfigs($environment)
+            ->run()
         ;
 
-
-        $dir = new \DirectoryIterator($directory);
-
-        foreach($dir as $fileInfo)
-        {
-
-            $schematic->setSchemaFile($fileInfo->getFilename());
-
-            if(!$fileInfo->isDot() && $fileInfo->getFilename() != 'config')
-            {
-
-                if($schematic->exists())
-                {
-
-                    $schematic->generate();
-
-                }
-                else
-                {
-
-                    throw new \Exception('No schematics exist...');
-
-                }
-
-            }
-
-        }
+        $output->writeln('<info>Migrations completed successfully!</info>');
 
     }
 
