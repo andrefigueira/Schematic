@@ -11,7 +11,7 @@
             "engine": "InnoDB"
         },
         "tables": {
-            "schematic": {
+            "promotions_engine": {
                 "fields": {
                     "id": {
                         "type": "int(11)",
@@ -22,6 +22,10 @@
                         "comment": "Id field for listing ids"
                     },
                     "name": {
+                        "type": "varchar(256)",
+                        "null": false
+                    },
+                    "test1": {
                         "type": "varchar(256)",
                         "null": false
                     }
