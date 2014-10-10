@@ -11,7 +11,7 @@
             "engine": "InnoDB"
         },
         "tables": {
-            "promotions_engine": {
+            "hello_world": {
                 "fields": {
                     "id": {
                         "type": "int(11)",
@@ -22,11 +22,11 @@
                         "comment": "Id field for listing ids"
                     },
                     "name": {
-                        "type": "varchar(256)",
+                        "type": "varchar(128)",
                         "null": false
                     },
-                    "test1": {
-                        "type": "varchar(256)",
+                    "created_date": {
+                        "type": "datetime",
                         "null": false
                     }
                 }
