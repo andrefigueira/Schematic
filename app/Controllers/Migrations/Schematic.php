@@ -14,6 +14,7 @@ namespace Controllers\Migrations;
 
 use Controllers\Database\DatabaseInterface;
 use Controllers\Logger\LogInterface;
+use Controllers\Cli\OutputInterface;
 
 class Schematic
 {
@@ -42,33 +43,60 @@ class Schematic
     /** @var string The name of the schema file to load up */
     protected $schemaFile = '';
 
+    /** @var string The db name */
     protected $db;
 
+    /** @var DatabaseInterface The Database adapter currently in use */
     protected $dbAdapter;
 
+    /** @var string The environment that the Schematic is running on */
     protected $environment;
 
+    /** @var object Object of properties pertainent to the database connected to */
     protected $environmentConfigs;
 
-    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter)
+    /**
+     * We're injecting a logger and a database adapter into the Schematic which are interchangeable
+     *
+     * @param LogInterface $log
+     * @param DatabaseInterface $dbAdapter
+     * @param OutputInterface $output
+     */
+    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, OutputInterface $output)
     {
 
         $this->log = $log;
         $this->dbAdapter = $dbAdapter;
+        $this->output = $output;
 
         return $this;
 
     }
 
+    /**
+     * Setter for the working directory
+     *
+     * @param $dir
+     * @return $this
+     */
     public function setDir($dir)
     {
 
         $this->schemaDir = $dir;
 
+        $this->output->writeln('Set directory to: ' . $dir);
+
         return $this;
 
     }
 
+    /**
+     * Setter and binder of environment configs for the database for which we are managing
+     *
+     * @param $environment
+     * @return $this
+     * @throws \Exception
+     */
     public function setEnvironmentConfigs($environment)
     {
 
@@ -80,13 +108,18 @@ class Schematic
 
     }
 
+    /**
+     * Bind the environment configs to properties
+     *
+     * @throws \Exception
+     */
     private function bindEnvironmentConfigs()
     {
 
         $environmentPath = $this->schemaDir . 'config/';
         $environmentFile = $environmentPath . $this->environment . '.json';
 
-        if(($environmentFile))
+        if($environmentFile)
         {
 
             $this->environmentConfigs = @file_get_contents($environmentFile);
@@ -104,6 +137,11 @@ class Schematic
 
     }
 
+    /**
+     * Set the schema file to be used currently
+     *
+     * @param $schemaFile
+     */
     public function setSchemaFile($schemaFile)
     {
 
@@ -111,6 +149,11 @@ class Schematic
 
     }
 
+    /**
+     * Gets the current schema object which is relevant to the current file proecting
+     *
+     * @return Object
+     */
     public function getSchema()
     {
 
@@ -118,6 +161,11 @@ class Schematic
 
     }
 
+    /**
+     * Sets up database adapter configurations
+     *
+     * @return void
+     */
     private function setDbAdapterConfigs()
     {
 
@@ -130,12 +178,9 @@ class Schematic
     }
 
     /**
-     * Checks if the schema directory exists, checks if the schema.json exists, after fetched the json contents and saves
-     * the json as a recursive object with all of the schema properties
+     * Checks if the schema file exists, if it does, assigns the json_decoded schema file to a schema property within the instance
      *
-     * @return bool
      * @throws \Exception
-     *
      */
     public function exists()
     {
@@ -153,6 +198,8 @@ class Schematic
 
                 if(file_exists($specificSchemaConfFile))
                 {
+
+                    $this->output->writeln('Loading schema file: ' . $specificSchemaConfFile);
 
                     $this->schema = @file_get_contents($specificSchemaConfFile);
 
@@ -217,12 +264,10 @@ class Schematic
      * @param $table
      * @param $settings
      * @throws \Exception
-     *
      */
     private function createTable($table, $settings)
     {
 
-        /** @var TYPE_NAME $addFieldSql */
         $addFieldSql = '';
         $indexesSql = '';
         $foreignKeysSql = '';
@@ -278,36 +323,37 @@ class Schematic
 
         //Query to create the table if it doesn't exist indicating a first time run
         $query = '
-        CREATE TABLE IF NOT EXISTS `'. $table . '` (
+        CREATE TABLE IF NOT EXISTS '. $table . ' (
           ' . $addFieldSql . '
           ' . $indexesSql . '
           ' . $foreignKeysSql . '
         ) ENGINE=' . $this->schema->database->general->engine . ' DEFAULT CHARSET=' . $this->schema->database->general->charset . ' COLLATE=' . $this->schema->database->general->collation . ';
         ';
 
-        $this->db->select_db($this->schema->database->general->name);
-
-        $result = $this->db->query($query);
-
-        $this->createSqlFile($table, $query);
+        $result = $this->dbAdapter->query($query);
 
         if($result)
         {
 
-            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')';
+            $this->createSqlFile($table, $query);
+
+            $message = 'Generated Schema Successfully table (' . $table . ') on database (' . $this->schema->database->general->name . ')';
 
             $this->log->write($message);
-
-        }
-        else
-        {
-
-            throw new \Exception('Failed to generate schema: ' . $this->db->error);
+            $this->output->writeln($message);
 
         }
 
     }
 
+    /**
+     * Creates SQL file with the query which was last executed
+     *
+     * @param $table
+     * @param $query
+     * @return bool
+     * @throws \Exception
+     */
     public function createSqlFile($table, $query)
     {
 
@@ -353,7 +399,7 @@ class Schematic
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
 
-            if($this->fieldExists($table, $field))
+            if($this->dbAdapter->fieldExists($table, $field))
             {
 
                 $updateFieldSql .= '
@@ -384,42 +430,39 @@ class Schematic
 
         //Query to update the table only if it already exists
         $query = '
-        ALTER TABLE `' . $table . '`
+        ALTER TABLE ' . $table . '
         ' . $updateFieldSql . ';
         ';
 
-        $this->db->select_db($this->schema->database->general->name);
-
         $this->deleteNonSchemaFields($table, $settings);
 
-        $result = $this->db->query($query);
-
-        $this->createSqlFile($table, $query);
+        $result = $this->dbAdapter->query($query);
 
         if($result)
         {
 
-            $message = 'Generated Schema Successfully table (' . $table . ') on database(' . $this->schema->database->general->name . ')';
+            $this->createSqlFile($table, $query);
+
+            $message = 'Generated Schema Successfully table (' . $table . ') on database (' . $this->schema->database->general->name . ')';
 
             $this->log->write($message);
-
-        }
-        else
-        {
-
-            throw new \Exception('Failed to generate schema: ' . $this->db->error);
+            $this->output->writeln($message);
 
         }
 
     }
 
+    /**
+     * Deletes fields which are in the database but not in the Schema file
+     *
+     * @param $table
+     * @param $settings
+     */
     private function deleteNonSchemaFields($table, $settings)
     {
 
-        $this->db->select_db($this->schema->database->general->name);
-
         $deleteSql = '';
-        $tableFields = $this->showFields($table);
+        $tableFields = $this->dbAdapter->showFields($table);
         $newFields = array();
         $unschemedFields = array();
 
@@ -436,7 +479,7 @@ class Schematic
             if(!in_array($field, $newFields))
             {
 
-                $deleteSql .= 'ALTER TABLE `' . $table . '` DROP `' .$field . '`;';
+                $deleteSql .= 'ALTER TABLE ' . $table . ' DROP ' .$field . ';';
 
                 array_push($unschemedFields, $field);
 
@@ -447,46 +490,15 @@ class Schematic
         if($deleteSql != '')
         {
 
-            $result = $this->db->multi_query($deleteSql);
-
-            if($result)
+            if($this->dbAdapter->multiQuery($deleteSql))
             {
 
                 $message = 'Deleted Unschemed fields (' . implode(', ', $unschemedFields) . ')';
 
                 $this->log->write($message);
-
-                echo $message . PHP_EOL;
-
-            }
-            else
-            {
-
-                throw new \Exception('Failed to delete unschemed fields: ' . $this->db->error);
+                $this->output->writeln($message);
 
             }
-
-        }
-
-    }
-
-    private function tableExists($table)
-    {
-
-        $this->db->select_db($this->schema->database->general->name);
-
-        $result = $this->db->query('SHOW TABLES LIKE "' . $table . '"');
-
-        if($result)
-        {
-
-            return (bool)$result->num_rows;
-
-        }
-        else
-        {
-
-            throw new \Exception('Unable to check if table exists: ' . $this->db->error);
 
         }
 
@@ -496,10 +508,11 @@ class Schematic
      * Sets up the MySQL connection, runs the table generation and builds the query then runs it
      *
      * @throws \Exception
-     *
      */
     public function generate()
     {
+
+        $this->dbAdapter->setDbName($this->schema->database->general->name);
 
         foreach($this->schema->database->tables as $table => $settings)
         {
@@ -517,7 +530,7 @@ class Schematic
 
             }
 
-            if($this->tableExists($table))
+            if($this->dbAdapter->tableExists($table))
             {
 
                 $this->updateTable($table, $settings);
@@ -529,42 +542,6 @@ class Schematic
                 $this->createTable($table, $settings);
 
             }
-
-        }
-
-    }
-
-    /**
-     * Checks the table of the database to see if the column passed already exists
-     *
-     * @param $table
-     * @param $field
-     * @return bool
-     * @throws \Exception
-     *
-     */
-    private function fieldExists($table, $field)
-    {
-
-        $result = $this->db->query('
-        SELECT *
-        FROM information_schema.COLUMNS
-        WHERE
-        TABLE_SCHEMA = "' . $this->schema->database->general->name . '"
-        AND TABLE_NAME = "' . $table . '"
-        AND COLUMN_NAME = "' . $field . '"
-        ');
-
-        if($result)
-        {
-
-            return (bool)$result->num_rows;
-
-        }
-        else
-        {
-
-            throw new \Exception('Failure in checking if column exists: '. $this->db->error);
 
         }
 
@@ -585,37 +562,11 @@ class Schematic
 
     }
 
-    public function showFields($table)
-    {
-
-        $this->db->select_db($this->schema->database->general->name);
-
-        $result = $this->db->query('SHOW COLUMNS FROM ' . $table);
-
-        if($result)
-        {
-
-            $resultsArray = array();
-
-            while($row = $result->fetch_object())
-            {
-
-                array_push($resultsArray, $row->Field);
-
-            }
-
-            return $resultsArray;
-
-        }
-        else
-        {
-
-            throw new \Exception('Unable to check if table exists: ' . $this->db->error);
-
-        }
-
-    }
-
+    /**
+     * Runs through the directory and executes for all of the schema files in the schema directory
+     *
+     * @throws \Exception
+     */
     public function run()
     {
 

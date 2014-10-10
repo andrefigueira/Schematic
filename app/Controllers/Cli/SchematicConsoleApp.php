@@ -2,6 +2,7 @@
 
 namespace Controllers\Cli;
 
+use Controllers\Cli\OutputAdapters\SymfonyOutput;
 use Controllers\Database\Adapters\MysqlAdapter;
 use Controllers\Logger\Log;
 use Controllers\Migrations\Schematic;
@@ -63,8 +64,9 @@ class SchematicConsoleApp extends Command
         $output->writeln('<info>Beginning migrations</info>');
 
         $log = new Log();
+        $schematicOutput = new SymfonyOutput($output);
 
-        $schematic = new Schematic($log, $db);
+        $schematic = new Schematic($log, $db, $schematicOutput);
         $schematic
             ->setDir($directory)
             ->setEnvironmentConfigs($environment)
