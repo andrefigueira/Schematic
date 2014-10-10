@@ -4,6 +4,7 @@ MySQL Schematic
 A MySQL schema generator in PHP define your schemas as JSON then run the script to generate your database or maintain it.
 
 [![Build Status](https://travis-ci.org/andrefigueira/Schematic.svg?branch=master)](https://travis-ci.org/andrefigueira/Schematic)
+[![Latest Stable Version](https://poser.pugx.org/mysql/schematic/v/stable.svg)](https://packagist.org/packages/mysql/schematic) [![Total Downloads](https://poser.pugx.org/mysql/schematic/downloads.svg)](https://packagist.org/packages/mysql/schematic) [![Latest Unstable Version](https://poser.pugx.org/mysql/schematic/v/unstable.svg)](https://packagist.org/packages/mysql/schematic) [![License](https://poser.pugx.org/mysql/schematic/license.svg)](https://packagist.org/packages/mysql/schematic)
 
 #Install via Composer
 
@@ -33,11 +34,6 @@ will stop running and throw and exception.
         "schematic": {
             "name": "NAME OF THE SCHEMATIC",
             "version": "1.0"
-        },
-        "connection": {
-            "host": "127.0.0.1",
-            "user": "root",
-            "pass": ""
         },
         "database": {
             "general": {
@@ -88,10 +84,6 @@ will stop running and throw and exception.
 Once you have everything set up in your schema files, open your command line, cd to the root of the schematic folder and type the following:
 
 `php vendor/mysql/schematic/cli.php`
-
-If you set the php file to executable with:
-
-`chmod +x vendor/mysql/schematic/cli.php`
 
 Then you should be able to run the update with:
 

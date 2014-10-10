@@ -8,10 +8,12 @@
 require_once __DIR__ . '/app/bootstrap.php';
 
 use Controllers\Cli\SchematicConsoleApp;
+use Controllers\Cli\SchematicGeneratorConsoleApp;
 use Symfony\Component\Console\Application;
 
 $application = new Application(APP_NAME, APP_VERSION);
 
 $application->add(new SchematicConsoleApp);
+$application->add(new SchematicGeneratorConsoleApp);
 
 $application->run();

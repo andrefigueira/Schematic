@@ -17,22 +17,6 @@ class SchematicTest extends PHPUnit_Framework_TestCase
 
     }
 
-    public function testJsonCanBeReadFromSchemaFolder()
-    {
-
-        $schematic = $this->schematic;
-        $schematic
-            ->setDir('./schemas/')
-            ->setSchemaFile('schema.json');
-
-        $schematic->exists();
-
-        $decodedJsonObject = $schematic->getSchema();
-
-        $this->assertObjectHasAttribute('schematic', $decodedJsonObject);
-
-    }
-
     public function testCanCreateNewSqlFile()
     {
 
