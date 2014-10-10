@@ -5,16 +5,16 @@
  *
  */
 
-namespace Controllers;
+namespace Controllers\Logger;
 
-class Log
+class Log implements LogInterface
 {
 
-    //The directory of the log
-    private $dir = './logs/';
+    protected $dir = './logs/';
 
-    //The default sql changes log
-    private $file = 'sql-changes.log';
+    protected $file = 'sql-changes.log';
+
+    protected $filePath;
 
     /**
      * Create the directory if it doesn't exist on instantiation of the class
