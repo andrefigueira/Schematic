@@ -22,6 +22,8 @@ class MysqlAdapter implements DatabaseInterface
 
         $this->db = new \mysqli($this->host, $this->username, $this->password);
 
+        $this->db->autocommit(false);
+
         if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
 
     }
@@ -65,7 +67,9 @@ class MysqlAdapter implements DatabaseInterface
     public function createDatabase($name)
     {
 
-        return $this->db->query('CREATE DATABASE IF NOT EXISTS `' . $name . '`');
+        $result = $this->db->query('CREATE DATABASE IF NOT EXISTS `' . $name . '`');
+
+        return $result;
 
     }
 
@@ -161,7 +165,9 @@ class MysqlAdapter implements DatabaseInterface
         else
         {
 
-            throw new \Exception('Failed to run query: ' . $this->db->error);
+            $this->db->rollback();
+
+            throw new \Exception('Failed to run query: ' . $query .' : ' . $this->db->error);
 
         }
 
@@ -180,6 +186,8 @@ class MysqlAdapter implements DatabaseInterface
         }
         else
         {
+
+            $this->db->rollback();
 
             throw new \Exception('Failed to run multiquery: ' . $this->db->error);
 
@@ -213,6 +221,13 @@ class MysqlAdapter implements DatabaseInterface
             throw new \Exception('Unable to check if table exists: ' . $this->db->error);
 
         }
+
+    }
+
+    public function commit()
+    {
+
+        $this->db->commit();
 
     }
 

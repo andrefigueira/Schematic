@@ -597,6 +597,8 @@ class Schematic
 
         }
 
+        $this->dbAdapter->commit();
+
     }
 
 }

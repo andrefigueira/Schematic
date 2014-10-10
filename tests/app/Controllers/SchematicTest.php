@@ -9,8 +9,11 @@ class SchematicTest extends PHPUnit_Framework_TestCase
     {
 
         $log = new \Controllers\Logger\Log();
+        $mysql = new \Controllers\Database\Adapters\MysqlAdapter();
+        $symfonyOutput = new Symfony\Component\Console\Output\ConsoleOutput();
+        $output = new \Controllers\Cli\OutputAdapters\SymfonyOutput($symfonyOutput);
 
-        $this->schematic = new \Controllers\Migrations\Schematic($log);
+        $this->schematic = new \Controllers\Migrations\Schematic($log, $mysql, $output);
 
     }
 
