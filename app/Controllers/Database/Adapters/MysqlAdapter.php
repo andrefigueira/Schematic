@@ -231,4 +231,141 @@ class MysqlAdapter implements DatabaseInterface
 
     }
 
+    public function mapDatabase()
+    {
+
+        $this->selectDb();
+
+         return $this->fetchTables();
+
+    }
+
+    private function fetchTables()
+    {
+
+        $result = $this->db->query('SHOW tables;');
+
+        if($result)
+        {
+
+            $resultsObj = new \stdClass();
+
+            while($row = $result->fetch_object())
+            {
+
+                $resultsObj->{$row->Tables_in_promotions} = $this->fetchFields($row->Tables_in_promotions);
+
+            }
+
+            return $resultsObj;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch tables: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function fetchFields($table)
+    {
+
+        $result = $this->db->query('DESCRIBE ' . $table . ';');
+
+        if($result)
+        {
+
+            $resultsObj = new \stdClass();
+
+            while($row = $result->fetch_object())
+            {
+
+                $row->foreignKeys = $this->fetchFieldConstraints($table, $row->Field);
+
+                $resultsObj->{$row->Field} = $row;
+
+            }
+
+            return $resultsObj;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch table fields: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function fetchFieldConstraints($table, $field)
+    {
+
+        $query = '
+        SELECT *
+        FROM information_schema.key_column_usage
+        WHERE referenced_table_name IS NOT NULL
+        AND TABLE_NAME = "' . $table . '"
+        AND COLUMN_NAME = "' . $field . '"
+        LIMIT 1
+        ';
+
+        $result = $this->db->query($query);
+
+        if($result)
+        {
+
+            while($row = $result->fetch_object())
+            {
+
+                $row->actions = $this->fetchFieldConstraintsActions($row->CONSTRAINT_NAME);
+
+                return $row;
+
+            }
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch field constraints: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function fetchFieldConstraintsActions($constraintName)
+    {
+
+        $query = '
+        SELECT *
+        FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+        WHERE CONSTRAINT_NAME = "' . $constraintName . '"
+        LIMIT 1
+        ';
+
+        $result = $this->db->query($query);
+
+        if($result)
+        {
+
+            while($row = $result->fetch_object())
+            {
+
+                return $row;
+
+            }
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch field constraints actions: ' . $this->db->error);
+
+        }
+
+    }
+
 }
