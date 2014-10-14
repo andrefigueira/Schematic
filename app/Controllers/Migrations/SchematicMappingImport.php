@@ -4,18 +4,21 @@ namespace Controllers\Migrations;
 
 use Controllers\Database\DatabaseInterface;
 use Controllers\Logger\LogInterface;
-use Controllers\Cli\OutputInterface;
 use Controllers\Migrations\Generators\FileGeneratorInferface;
 
 class SchematicMappingImport
 {
 
+    /** @var string The directory for the import */
     protected $directory;
 
+    /** @var string The database to use for the import */
     protected $database;
 
+    /** @var string The environment to use for the import */
     protected $environment;
 
+    /** @var string The environment variables */
     protected $environmentConfigs;
 
     /**
@@ -23,21 +26,25 @@ class SchematicMappingImport
      *
      * @param LogInterface $log
      * @param DatabaseInterface $dbAdapter
-     * @param OutputInterface $output
      * @param FileGeneratorInferface $fileGenerator
      */
-    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, OutputInterface $output, FileGeneratorInferface $fileGenerator)
+    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, FileGeneratorInferface $fileGenerator)
     {
 
         $this->log = $log;
         $this->dbAdapter = $dbAdapter;
-        $this->output = $output;
         $this->fileGenerator = $fileGenerator;
 
         return $this;
 
     }
 
+    /**
+     * Sets the directory for the import
+     *
+     * @param $directory
+     * @return $this
+     */
     public function setDir($directory)
     {
 
@@ -124,12 +131,17 @@ class SchematicMappingImport
 
     }
 
+    /**
+     * Runs the application, sets the environment configs based on the environment and runs the mapper and generator.
+     */
     public function run()
     {
 
         $this->setEnvironmentConfigs($this->environment);
 
-        $this->fileGenerator->mapAndGenerateSchema($this->dbAdapter->mapDatabase());
+        $this->fileGenerator
+            ->setDir($this->directory)
+            ->mapAndGenerateSchema($this->dbAdapter->mapDatabase());
 
     }
 

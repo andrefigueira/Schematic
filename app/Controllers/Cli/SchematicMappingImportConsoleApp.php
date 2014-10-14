@@ -51,6 +51,8 @@ class SchematicMappingImportConsoleApp extends Command
         $dbName = $input->getArgument('db');
         $fileType = $input->getArgument('fileType');
 
+        $schematicOutput = new SymfonyOutput($output);
+
         $database = 'mysql';
 
         switch($database)
@@ -69,7 +71,7 @@ class SchematicMappingImportConsoleApp extends Command
         {
 
             case 'json':
-                $fileTypeGenerator = new JsonAdapter();
+                $fileTypeGenerator = new JsonAdapter($schematicOutput);
                 break;
 
             default:
@@ -80,9 +82,8 @@ class SchematicMappingImportConsoleApp extends Command
         $output->writeln('<info>Beginning migrations</info>');
 
         $log = new Log();
-        $schematicOutput = new SymfonyOutput($output);
 
-        $schematic = new SchematicMappingImport($log, $db, $schematicOutput, $fileTypeGenerator);
+        $schematic = new SchematicMappingImport($log, $db, $fileTypeGenerator);
         $schematic
             ->setDir($directory)
             ->setDatabase($dbName)
