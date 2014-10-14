@@ -281,13 +281,14 @@ class Schematic
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
 
-            //@todo: On create build up, update queries to run at the end and add constraints
             if(isset($fieldSettings->foreignKey))
             {
 
+                if($foreignKeysSql != ''){ $appendComma = ',';}else{ $appendComma = '';}
+
                 $foreignKeysSql .= '
-                ,
-                FOREIGN KEY (' . $field . ')
+                ' . $appendComma . '
+                ADD CONSTRAINT FOREIGN KEY (' . $field . ')
                 REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
                 ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
                 ON UPDATE ' . $fieldSettings->foreignKey->on->update . '
@@ -334,6 +335,9 @@ class Schematic
 
         if($result)
         {
+
+            //@todo: Make this run at the end of all the tables having been created
+            //$addForeignKeysSql = 'ALTER TABLE ' . $foreignKeysSql;
 
             $this->createSqlFile($table, $query);
 
