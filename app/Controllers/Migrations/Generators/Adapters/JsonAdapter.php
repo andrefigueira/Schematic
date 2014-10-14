@@ -74,6 +74,7 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
         foreach($fields as $fieldName => $fieldAttributes)
         {
 
+            //Check if the field is unsigned, if so split the types and set as unsigned
             if(strstr($fieldAttributes->Type, 'unsigned'))
             {
 
@@ -90,29 +91,94 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
 
             }
 
+            //Check if set to auto_increment, if so set the auto increment variable
             if(strstr($fieldAttributes->Extra, 'auto_increment')){ $autoIncrement = true;}else{ $autoIncrement = false;}
+
+            //Check if allows null and set it
             if($fieldAttributes->Null == 'NO'){ $null = false;}else{ $null = true;}
 
+            //Check if has an index, if so then check which kind and set
+            if($fieldAttributes->Key !== '')
+            {
+
+                switch($fieldAttributes->Key)
+                {
+
+                    case 'UNI':
+                        $index = 'UNIQUE KEY';
+                        break;
+
+                    case 'PRI':
+                        $index = 'PRIMARY KEY';
+                        break;
+
+                    case 'MUL':
+                        $index = 'INDEX';
+                        break;
+
+                    default:
+                        $index = null;
+                }
+
+            }
+            else
+            {
+
+                $index = null;
+
+            }
+
+            //Check if has foreign keys if so set the foreign keys array
+            if(isset($fieldAttributes->foreignKeys) && $fieldAttributes->foreignKeys !== null)
+            {
+
+                $foreignKeys = array(
+                    'table' => $fieldAttributes->foreignKeys->REFERENCED_TABLE_NAME,
+                    'field' => $fieldAttributes->foreignKeys->REFERENCED_COLUMN_NAME,
+                    'on' => array(
+                        'delete' => $fieldAttributes->foreignKeys->actions->DELETE_RULE,
+                        'update' => $fieldAttributes->foreignKeys->actions->UPDATE_RULE
+                    )
+                );
+
+            }
+            else
+            {
+
+                $foreignKeys = null;
+
+            }
+
+            //Create the formatted fields
             $formattedFields[$fieldName] = array(
                 'type' => $type,
                 'null' => $null,
                 'unsigned' => $unsigned,
-                'autoIncrement' => $autoIncrement
+                'autoIncrement' => $autoIncrement,
+                'index' => $index,
+                'foreignKey' => $foreignKeys
             );
+
+            //If no index is set remove from the mapper
+            if($index === null){ unset($formattedFields[$fieldName]['index']);}
+
+            //If no foreign keys are set remove from the mapper
+            if($foreignKeys === null){ unset($formattedFields[$fieldName]['foreignKey']);}
 
         }
 
+        //Map everything finally
         $format = array(
             'schematic' => array(
-                'name' => 'Schematic',
-                'version' => '1.0'
+                'name' => APP_NAME,
+                'version' => APP_VERSION
             ),
             'database' => array(
                 'general' => array(
-                    'name' => 'Schematic auto generated schema',
-                    'charset' => 'utf8',
-                    'collation' => 'utf8_general_ci',
-                    'engine' => 'InnoDB'
+                    'name' => $this->dbName,
+                    'charset' => $this->dbVars->character_set_database,
+                    'collation' => $this->dbVars->collation_database,
+                    'engine' => $this->dbVars->default_storage_engine
                 ),
                 'tables' => array(
                     $table => array(

@@ -281,6 +281,7 @@ class Schematic
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
 
+            //@todo: On create build up, update queries to run at the end and add constraints
             if(isset($fieldSettings->foreignKey))
             {
 
@@ -326,7 +327,6 @@ class Schematic
         CREATE TABLE IF NOT EXISTS '. $table . ' (
           ' . $addFieldSql . '
           ' . $indexesSql . '
-          ' . $foreignKeysSql . '
         ) ENGINE=' . $this->schema->database->general->engine . ' DEFAULT CHARSET=' . $this->schema->database->general->charset . ' COLLATE=' . $this->schema->database->general->collation . ';
         ';
 
@@ -388,6 +388,7 @@ class Schematic
     {
 
         $updateFieldSql = '';
+        $foreignKeysSql = '';
 
         $data = array();
 
@@ -414,6 +415,19 @@ class Schematic
 
             }
 
+            if(isset($fieldSettings->foreignKey))
+            {
+
+                $foreignKeysSql .= '
+                ,
+                ADD CONSTRAINT FOREIGN KEY (' . $field . ')
+                REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
+                ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
+                ON UPDATE ' . $fieldSettings->foreignKey->on->update . '
+                ';
+
+            }
+
             array_push($data, array(
                 'table' => $table,
                 'index' => $fieldSettings->index,
@@ -431,7 +445,8 @@ class Schematic
         //Query to update the table only if it already exists
         $query = '
         ALTER TABLE ' . $table . '
-        ' . $updateFieldSql . ';
+        ' . $updateFieldSql . '
+        ' . $foreignKeysSql . ';
         ';
 
         $this->deleteNonSchemaFields($table, $settings);

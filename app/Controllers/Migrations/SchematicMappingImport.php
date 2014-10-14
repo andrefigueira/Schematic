@@ -141,6 +141,8 @@ class SchematicMappingImport
 
         $this->fileGenerator
             ->setDir($this->directory)
+            ->setDbName($this->database)
+            ->setDatabaseVariables($this->dbAdapter->fetchDatabaseVariables())
             ->mapAndGenerateSchema($this->dbAdapter->mapDatabase());
 
     }

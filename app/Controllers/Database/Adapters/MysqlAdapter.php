@@ -1,21 +1,22 @@
 <?php
+/**
+ * This MySQL adapter implements methods defined on the DatabaseInterface and allows the manipulation of the database
+ * in a way which the Schematic tool needs, when trying to determine all parts of the database for imports and
+ * for the migrations which are performed on it
+ *
+ * @author Andre Figueira <andre.figueira@me.com>
+ */
 
 namespace Controllers\Database\Adapters;
 
+use Controllers\Database\AbstractDatabaseAdapter;
 use Controllers\Database\DatabaseInterface;
 
-class MysqlAdapter implements DatabaseInterface
+class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
 {
 
+    /** @var resource The database resource */
     protected $db;
-
-    protected $host;
-
-    protected $username;
-
-    protected $password;
-
-    protected $dbName;
 
     public function connect()
     {
@@ -25,42 +26,6 @@ class MysqlAdapter implements DatabaseInterface
         $this->db->autocommit(false);
 
         if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
-
-    }
-
-    public function setHost($host)
-    {
-
-        $this->host = $host;
-
-        return $this;
-
-    }
-
-    public function setUsername($username)
-    {
-
-        $this->username = $username;
-
-        return $this;
-
-    }
-
-    public function setPassword($password)
-    {
-
-        $this->password = $password;
-
-        return $this;
-
-    }
-
-    public function setDbName($dbName)
-    {
-
-        $this->dbName = $dbName;
-
-        return $this;
 
     }
 
@@ -167,7 +132,7 @@ class MysqlAdapter implements DatabaseInterface
 
             $this->db->rollback();
 
-            throw new \Exception('Failed to run query: ' . $query .' : ' . $this->db->error);
+            throw new \Exception('Failed to run query: ' . $query . ' : ' . $this->db->error);
 
         }
 
@@ -237,6 +202,35 @@ class MysqlAdapter implements DatabaseInterface
         $this->selectDb();
 
          return $this->fetchTables();
+
+    }
+
+    public function fetchDatabaseVariables()
+    {
+
+        $result = $this->db->query('SHOW variables;');
+
+        if($result)
+        {
+
+            $resultsObj = new \stdClass();
+
+            while($row = $result->fetch_object())
+            {
+
+                $resultsObj->{$row->Variable_name} = $row->Value;
+
+            }
+
+            return $resultsObj;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch tables: ' . $this->db->error);
+
+        }
 
     }
 

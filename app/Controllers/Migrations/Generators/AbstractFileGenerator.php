@@ -2,11 +2,17 @@
 
 namespace Controllers\Migrations\Generators;
 
-class AbstractFileGenerator
+abstract class AbstractFileGenerator
 {
 
     /** @var string The directory where the created file will be */
     protected $directory;
+
+    /** @var Object The database variables */
+    protected $dbVars;
+
+    /** @var string The database name */
+    protected $dbName;
 
     /**
      * Sets the create file directory
@@ -18,6 +24,36 @@ class AbstractFileGenerator
     {
 
         $this->directory = $directory;
+
+        return $this;
+
+    }
+
+    /**
+     * Sets the database name
+     *
+     * @param $dbName
+     * @return $this
+     */
+    public function setDbName($dbName)
+    {
+
+        $this->dbName = $dbName;
+
+        return $this;
+
+    }
+
+    /**
+     * Sets the database variables
+     *
+     * @param $variables
+     * @return $this
+     */
+    public function setDatabaseVariables($variables)
+    {
+
+        $this->dbVars = $variables;
 
         return $this;
 
