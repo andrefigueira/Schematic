@@ -99,6 +99,7 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         TABLE_SCHEMA = "' . $this->dbName . '"
         AND TABLE_NAME = "' . $table . '"
         AND COLUMN_NAME = "' . $field . '"
+        LIMIT 1
         ');
 
         if($result)
@@ -351,6 +352,37 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
                 return $row;
 
             }
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch field constraints actions: ' . $this->db->error);
+
+        }
+
+    }
+
+    public function foreignKeyRelationExists($table, $field, $referencedTable, $referencedField)
+    {
+
+        $query = '
+        SELECT *
+        FROM information_schema.key_column_usage
+        WHERE referenced_table_name IS NOT NULL
+        AND TABLE_NAME = "' . $table . '"
+        AND COLUMN_NAME = "' . $field . '"
+        AND REFERENCED_TABLE_NAME = "' . $referencedTable . '"
+        AND REFERENCED_COLUMN_NAME = "' . $referencedField . '"
+        LIMIT 1
+        ';
+
+        $result = $this->db->query($query);
+
+        if($result)
+        {
+
+            return (bool)$result->num_rows;
 
         }
         else

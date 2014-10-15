@@ -55,6 +55,8 @@ class Schematic
     /** @var object Object of properties pertainent to the database connected to */
     protected $environmentConfigs;
 
+    protected $foreignKeysSql;
+
     /**
      * We're injecting a logger and a database adapter into the Schematic which are interchangeable
      *
@@ -270,7 +272,6 @@ class Schematic
 
         $addFieldSql = '';
         $indexesSql = '';
-        $foreignKeysSql = '';
         $data = array();
 
         foreach($settings->fields as $field => $fieldSettings)
@@ -284,14 +285,12 @@ class Schematic
             if(isset($fieldSettings->foreignKey))
             {
 
-                if($foreignKeysSql != ''){ $appendComma = ',';}else{ $appendComma = '';}
-
-                $foreignKeysSql .= '
-                ' . $appendComma . '
-                ADD CONSTRAINT FOREIGN KEY (' . $field . ')
-                REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
-                ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
-                ON UPDATE ' . $fieldSettings->foreignKey->on->update . '
+                $this->foreignKeysSql .= '
+                ALTER TABLE ' . $table . '
+                    ADD CONSTRAINT FOREIGN KEY (' . $field . ')
+                    REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
+                    ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
+                    ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';
                 ';
 
             }
@@ -335,9 +334,6 @@ class Schematic
 
         if($result)
         {
-
-            //@todo: Make this run at the end of all the tables having been created
-            //$addForeignKeysSql = 'ALTER TABLE ' . $foreignKeysSql;
 
             $this->createSqlFile($table, $query);
 
@@ -422,13 +418,18 @@ class Schematic
             if(isset($fieldSettings->foreignKey))
             {
 
-                $foreignKeysSql .= '
-                ,
-                ADD CONSTRAINT FOREIGN KEY (' . $field . ')
-                REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
-                ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
-                ON UPDATE ' . $fieldSettings->foreignKey->on->update . '
-                ';
+                if(!$this->dbAdapter->foreignKeyRelationExists($table, $field, $fieldSettings->foreignKey->table, $fieldSettings->foreignKey->field))
+                {
+
+                    $foreignKeysSql .= '
+                    ALTER TABLE ' . $table . '
+                    ADD CONSTRAINT FOREIGN KEY (' . $field . ')
+                    REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
+                    ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
+                    ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';
+                    ';
+
+                }
 
             }
 
@@ -446,11 +447,12 @@ class Schematic
 
         $updateFieldSql = substr($updateFieldSql, 0, -1);
 
+        if($foreignKeysSql != ''){ $this->foreignKeysSql = 'ALERT TABLE ' . $table . ' ' . $foreignKeysSql;}
+
         //Query to update the table only if it already exists
         $query = '
         ALTER TABLE ' . $table . '
         ' . $updateFieldSql . '
-        ' . $foreignKeysSql . ';
         ';
 
         $this->deleteNonSchemaFields($table, $settings);
@@ -616,7 +618,35 @@ class Schematic
 
         }
 
+        $this->applyForeignKeys();
+
         $this->dbAdapter->commit();
+
+    }
+
+    /**
+     * Runs the foreign keys update
+     */
+    public function applyForeignKeys()
+    {
+
+        if($this->foreignKeysSql != '')
+        {
+
+            if($this->dbAdapter->multiQuery($this->foreignKeysSql))
+            {
+
+                $this->output->writeln('<info>Applied foreign keys successfully</info>');
+
+            }
+
+        }
+        else
+        {
+
+            $this->output->writeln('<info>No foreign keys to be applied</info>');
+
+        }
 
     }
 
