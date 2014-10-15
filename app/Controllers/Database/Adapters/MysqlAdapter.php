@@ -1,21 +1,22 @@
 <?php
+/**
+ * This MySQL adapter implements methods defined on the DatabaseInterface and allows the manipulation of the database
+ * in a way which the Schematic tool needs, when trying to determine all parts of the database for imports and
+ * for the migrations which are performed on it
+ *
+ * @author Andre Figueira <andre.figueira@me.com>
+ */
 
 namespace Controllers\Database\Adapters;
 
+use Controllers\Database\AbstractDatabaseAdapter;
 use Controllers\Database\DatabaseInterface;
 
-class MysqlAdapter implements DatabaseInterface
+class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
 {
 
+    /** @var resource The database resource */
     protected $db;
-
-    protected $host;
-
-    protected $username;
-
-    protected $password;
-
-    protected $dbName;
 
     public function connect()
     {
@@ -25,42 +26,6 @@ class MysqlAdapter implements DatabaseInterface
         $this->db->autocommit(false);
 
         if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
-
-    }
-
-    public function setHost($host)
-    {
-
-        $this->host = $host;
-
-        return $this;
-
-    }
-
-    public function setUsername($username)
-    {
-
-        $this->username = $username;
-
-        return $this;
-
-    }
-
-    public function setPassword($password)
-    {
-
-        $this->password = $password;
-
-        return $this;
-
-    }
-
-    public function setDbName($dbName)
-    {
-
-        $this->dbName = $dbName;
-
-        return $this;
 
     }
 
@@ -134,6 +99,7 @@ class MysqlAdapter implements DatabaseInterface
         TABLE_SCHEMA = "' . $this->dbName . '"
         AND TABLE_NAME = "' . $table . '"
         AND COLUMN_NAME = "' . $field . '"
+        LIMIT 1
         ');
 
         if($result)
@@ -167,7 +133,7 @@ class MysqlAdapter implements DatabaseInterface
 
             $this->db->rollback();
 
-            throw new \Exception('Failed to run query: ' . $query .' : ' . $this->db->error);
+            throw new \Exception('Failed to run query: ' . $query . ' : ' . $this->db->error);
 
         }
 
@@ -228,6 +194,203 @@ class MysqlAdapter implements DatabaseInterface
     {
 
         $this->db->commit();
+
+    }
+
+    public function mapDatabase()
+    {
+
+        $this->selectDb();
+
+         return $this->fetchTables();
+
+    }
+
+    public function fetchDatabaseVariables()
+    {
+
+        $result = $this->db->query('SHOW variables;');
+
+        if($result)
+        {
+
+            $resultsObj = new \stdClass();
+
+            while($row = $result->fetch_object())
+            {
+
+                $resultsObj->{$row->Variable_name} = $row->Value;
+
+            }
+
+            return $resultsObj;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch tables: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function fetchTables()
+    {
+
+        $result = $this->db->query('SHOW tables;');
+
+        if($result)
+        {
+
+            $resultsObj = new \stdClass();
+
+            while($row = $result->fetch_object())
+            {
+
+                $resultsObj->{$row->Tables_in_promotions} = $this->fetchFields($row->Tables_in_promotions);
+
+            }
+
+            return $resultsObj;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch tables: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function fetchFields($table)
+    {
+
+        $result = $this->db->query('DESCRIBE ' . $table . ';');
+
+        if($result)
+        {
+
+            $resultsObj = new \stdClass();
+
+            while($row = $result->fetch_object())
+            {
+
+                $row->foreignKeys = $this->fetchFieldConstraints($table, $row->Field);
+
+                $resultsObj->{$row->Field} = $row;
+
+            }
+
+            return $resultsObj;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch table fields: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function fetchFieldConstraints($table, $field)
+    {
+
+        $query = '
+        SELECT *
+        FROM information_schema.key_column_usage
+        WHERE referenced_table_name IS NOT NULL
+        AND TABLE_NAME = "' . $table . '"
+        AND COLUMN_NAME = "' . $field . '"
+        LIMIT 1
+        ';
+
+        $result = $this->db->query($query);
+
+        if($result)
+        {
+
+            while($row = $result->fetch_object())
+            {
+
+                $row->actions = $this->fetchFieldConstraintsActions($row->CONSTRAINT_NAME);
+
+                return $row;
+
+            }
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch field constraints: ' . $this->db->error);
+
+        }
+
+    }
+
+    private function fetchFieldConstraintsActions($constraintName)
+    {
+
+        $query = '
+        SELECT *
+        FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+        WHERE CONSTRAINT_NAME = "' . $constraintName . '"
+        LIMIT 1
+        ';
+
+        $result = $this->db->query($query);
+
+        if($result)
+        {
+
+            while($row = $result->fetch_object())
+            {
+
+                return $row;
+
+            }
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch field constraints actions: ' . $this->db->error);
+
+        }
+
+    }
+
+    public function foreignKeyRelationExists($table, $field, $referencedTable, $referencedField)
+    {
+
+        $query = '
+        SELECT *
+        FROM information_schema.key_column_usage
+        WHERE referenced_table_name IS NOT NULL
+        AND TABLE_NAME = "' . $table . '"
+        AND COLUMN_NAME = "' . $field . '"
+        AND REFERENCED_TABLE_NAME = "' . $referencedTable . '"
+        AND REFERENCED_COLUMN_NAME = "' . $referencedField . '"
+        LIMIT 1
+        ';
+
+        $result = $this->db->query($query);
+
+        if($result)
+        {
+
+            return (bool)$result->num_rows;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to fetch field constraints actions: ' . $this->db->error);
+
+        }
 
     }
 

@@ -77,17 +77,13 @@ will stop running and throw and exception.
         }
     }
 
-###Note that foreign keys support is only available when first running the script to initially create your table
+###Note that currently foreign keys are only added, but not removed, If created a new database with constraints, you must run the update twice to add the constraints
 
 #Running the update
 
 Once you have everything set up in your schema files, open your command line, cd to the root of the schematic folder and type the following:
 
-`php vendor/mysql/schematic/cli.php`
-
-Then you should be able to run the update with:
-
-`./vendor/mysql/schematic/cli.php`
+`php cli.php`
 
 You could also consider creating an alias for it so that you don't need to type it every time that much, and also possibly clone the repo instead of including it as a dependency which would mean your alias could be a global one so you would use the exact same one everywhere.
 
@@ -95,9 +91,4 @@ This will execute the script, if there are any failures it will throw exception 
 
 The script also creates a log of all of the database changes which are made.
 
-Script options:
-
-- `-r` Runs the MySQL Schematic exporter, creates the database or runs the updates based on the JSON schemas defined
-- `-v` Prints the version of MySQL Schematic currently in use
-- `-t` Creates a new schema.json template in your schema directory e.g. `php vendor/mysql/schematic/cli.php -t products`
-- `-h` Shows the help menu
+#Reverse Engineering
