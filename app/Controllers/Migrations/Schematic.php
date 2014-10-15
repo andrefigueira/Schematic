@@ -6,7 +6,7 @@
  *
  * @author <Andre Figueira> andre.figueira@me.com
  * @package Schematic
- * @version 1.3.4
+ * @version 1.4.0
  *
  */
 
@@ -54,6 +54,8 @@ class Schematic
 
     /** @var object Object of properties pertainent to the database connected to */
     protected $environmentConfigs;
+
+    protected $foreignKeysSql;
 
     /**
      * We're injecting a logger and a database adapter into the Schematic which are interchangeable
@@ -270,7 +272,6 @@ class Schematic
 
         $addFieldSql = '';
         $indexesSql = '';
-        $foreignKeysSql = '';
         $data = array();
 
         foreach($settings->fields as $field => $fieldSettings)
@@ -284,12 +285,12 @@ class Schematic
             if(isset($fieldSettings->foreignKey))
             {
 
-                $foreignKeysSql .= '
-                ,
-                FOREIGN KEY (' . $field . ')
-                REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
-                ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
-                ON UPDATE ' . $fieldSettings->foreignKey->on->update . '
+                $this->foreignKeysSql .= '
+                ALTER TABLE ' . $table . '
+                    ADD CONSTRAINT FOREIGN KEY (' . $field . ')
+                    REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
+                    ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
+                    ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';
                 ';
 
             }
@@ -326,7 +327,6 @@ class Schematic
         CREATE TABLE IF NOT EXISTS '. $table . ' (
           ' . $addFieldSql . '
           ' . $indexesSql . '
-          ' . $foreignKeysSql . '
         ) ENGINE=' . $this->schema->database->general->engine . ' DEFAULT CHARSET=' . $this->schema->database->general->charset . ' COLLATE=' . $this->schema->database->general->collation . ';
         ';
 
@@ -388,6 +388,7 @@ class Schematic
     {
 
         $updateFieldSql = '';
+        $foreignKeysSql = '';
 
         $data = array();
 
@@ -414,6 +415,24 @@ class Schematic
 
             }
 
+            if(isset($fieldSettings->foreignKey))
+            {
+
+                if(!$this->dbAdapter->foreignKeyRelationExists($table, $field, $fieldSettings->foreignKey->table, $fieldSettings->foreignKey->field))
+                {
+
+                    $foreignKeysSql .= '
+                    ALTER TABLE ' . $table . '
+                    ADD CONSTRAINT FOREIGN KEY (' . $field . ')
+                    REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
+                    ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
+                    ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';
+                    ';
+
+                }
+
+            }
+
             array_push($data, array(
                 'table' => $table,
                 'index' => $fieldSettings->index,
@@ -428,10 +447,12 @@ class Schematic
 
         $updateFieldSql = substr($updateFieldSql, 0, -1);
 
+        if($foreignKeysSql != ''){ $this->foreignKeysSql = 'ALERT TABLE ' . $table . ' ' . $foreignKeysSql;}
+
         //Query to update the table only if it already exists
         $query = '
         ALTER TABLE ' . $table . '
-        ' . $updateFieldSql . ';
+        ' . $updateFieldSql . '
         ';
 
         $this->deleteNonSchemaFields($table, $settings);
@@ -597,7 +618,35 @@ class Schematic
 
         }
 
+        $this->applyForeignKeys();
+
         $this->dbAdapter->commit();
+
+    }
+
+    /**
+     * Runs the foreign keys update
+     */
+    public function applyForeignKeys()
+    {
+
+        if($this->foreignKeysSql != '')
+        {
+
+            if($this->dbAdapter->multiQuery($this->foreignKeysSql))
+            {
+
+                $this->output->writeln('<info>Applied foreign keys successfully</info>');
+
+            }
+
+        }
+        else
+        {
+
+            $this->output->writeln('<info>No foreign keys to be applied</info>');
+
+        }
 
     }
 

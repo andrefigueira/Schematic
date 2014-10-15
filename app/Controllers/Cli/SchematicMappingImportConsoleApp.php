@@ -5,20 +5,21 @@ namespace Controllers\Cli;
 use Controllers\Cli\OutputAdapters\SymfonyOutput;
 use Controllers\Database\Adapters\MysqlAdapter;
 use Controllers\Logger\Log;
-use Controllers\Migrations\Schematic;
+use Controllers\Migrations\Generators\Adapters\JsonAdapter;
+use Controllers\Migrations\SchematicMappingImport;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SchematicConsoleApp extends Command
+class SchematicMappingImportConsoleApp extends Command
 {
 
     protected function configure()
     {
         $this
-            ->setName('migrations:execute')
-            ->setDescription('Executes the database migration based on the JSON schema files')
+            ->setName('migrations:mapping')
+            ->setDescription('Generates the database schema based on an existing database')
             ->addArgument(
                 'dir',
                 InputArgument::REQUIRED,
@@ -29,6 +30,16 @@ class SchematicConsoleApp extends Command
                 InputArgument::REQUIRED,
                 'What is the environment?'
             )
+            ->addArgument(
+                'db',
+                InputArgument::REQUIRED,
+                'Which database do you want to construct?'
+            )
+            ->addArgument(
+                'fileType',
+                InputArgument::REQUIRED,
+                'Which type of schema file do you want to make?'
+            )
         ;
     }
 
@@ -37,6 +48,10 @@ class SchematicConsoleApp extends Command
 
         $directory = $input->getArgument('dir');
         $environment = $input->getArgument('env');
+        $dbName = $input->getArgument('db');
+        $fileType = $input->getArgument('fileType');
+
+        $schematicOutput = new SymfonyOutput($output);
 
         $database = 'mysql';
 
@@ -52,14 +67,26 @@ class SchematicConsoleApp extends Command
 
         }
 
+        switch($fileType)
+        {
+
+            case 'json':
+                $fileTypeGenerator = new JsonAdapter($schematicOutput);
+                break;
+
+            default:
+                throw new \Exception('We can only generate JSON files for now...');
+
+        }
+
         $output->writeln('<info>Beginning migrations</info>');
 
         $log = new Log();
-        $schematicOutput = new SymfonyOutput($output);
 
-        $schematic = new Schematic($log, $db, $schematicOutput);
+        $schematic = new SchematicMappingImport($log, $db, $fileTypeGenerator);
         $schematic
             ->setDir($directory)
+            ->setDatabase($dbName)
             ->setEnvironmentConfigs($environment)
             ->run()
         ;
