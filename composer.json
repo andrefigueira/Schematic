@@ -1,7 +1,7 @@
 {
     "name": "mysql/schematic",
     "description": "A simple MySQL migration management tool in PHP, create and update databases automatically with a config json file without having to use inbuilt ORM functions.",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "keywords": [
         "mysql",
         "database",

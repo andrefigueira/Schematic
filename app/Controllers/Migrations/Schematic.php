@@ -6,7 +6,7 @@
  *
  * @author <Andre Figueira> andre.figueira@me.com
  * @package Schematic
- * @version 1.4.0
+ * @version 1.4.1
  *
  */
 
@@ -56,6 +56,8 @@ class Schematic
     protected $environmentConfigs;
 
     protected $foreignKeysSql;
+
+    protected $indexesArray;
 
     /**
      * We're injecting a logger and a database adapter into the Schematic which are interchangeable
@@ -272,7 +274,7 @@ class Schematic
 
         $addFieldSql = '';
         $indexesSql = '';
-        $data = array();
+        $indexesArray = array();
 
         foreach($settings->fields as $field => $fieldSettings)
         {
@@ -301,22 +303,63 @@ class Schematic
             if(isset($fieldSettings->index) && $fieldSettings->index != '')
             {
 
-                $indexesSql .= '
-                ' . $fieldSettings->index . '(`' . $field . '`),';
+                $fieldKey = str_replace(' ', '_', $fieldSettings->index);
+
+                $indexesArray[$fieldKey][] = array(
+                    'type' => $fieldSettings->index,
+                    'field' => $field
+                );
 
             }
 
-            array_push($data, array(
-                'table' => $table,
-                'index' => $fieldSettings->index,
-                'field' => $field,
-                'type' => $fieldSettings->type,
-                'null' => $fieldSettings->null,
-                'autoIncrement' => $fieldSettings->autoIncrement,
-                'unsigned' => $fieldSettings->unsigned
-            ));
+        }
+
+        $primaryKeys = array();
+        $uniqueKeys = array();
+        $indexKeys = array();
+
+        foreach($indexesArray as $indexType => $indexes)
+        {
+
+            switch($indexType)
+            {
+
+                case 'PRIMARY_KEY':
+                    foreach($indexes as $index)
+                    {
+
+                        array_push($primaryKeys, $index['field']);
+
+                    }
+                    break;
+
+                case 'UNIQUE_KEY':
+                    foreach($indexes as $index)
+                    {
+
+                        array_push($uniqueKeys, $index['field']);
+
+                    }
+                    break;
+
+                default:
+                    foreach($indexes as $index)
+                    {
+
+                        array_push($indexKeys, $index['field']);
+
+                    }
+
+
+            }
 
         }
+
+        if(count($primaryKeys) > 0){ $indexesSql .= 'PRIMARY KEY (' . implode(', ', $primaryKeys)  . '),';}
+        if(count($uniqueKeys) > 0){ $indexesSql .= 'UNIQUE KEY (' . implode(', ', $uniqueKeys)  . '),';}
+        if(count($indexKeys) > 0){ $indexesSql .= 'INDEX (' . implode(', ', $indexKeys)  . '),';}
+
+        unset($indexesArray);
 
         if($indexesSql == ''){ $addFieldSql = substr($addFieldSql, 0, -1);}
 
@@ -388,9 +431,9 @@ class Schematic
     {
 
         $updateFieldSql = '';
+        $indexesSql = '';
         $foreignKeysSql = '';
-
-        $data = array();
+        $indexesArray = array();
 
         foreach($settings->fields as $field => $fieldSettings)
         {
@@ -433,24 +476,78 @@ class Schematic
 
             }
 
-            array_push($data, array(
-                'table' => $table,
-                'index' => $fieldSettings->index,
-                'field' => $field,
-                'type' => $fieldSettings->type,
-                'null' => $fieldSettings->null,
-                'autoIncrement' => $fieldSettings->autoIncrement,
-                'unsigned' => $fieldSettings->unsigned
-            ));
+            if(isset($fieldSettings->index) && $fieldSettings->index != '')
+            {
+
+                $fieldKey = str_replace(' ', '_', $fieldSettings->index);
+
+                $indexesArray[$fieldKey][] = array(
+                    'type' => $fieldSettings->index,
+                    'field' => $field
+                );
+
+            }
 
         }
 
-        $updateFieldSql = substr($updateFieldSql, 0, -1);
+        $primaryKeys = array();
+        $uniqueKeys = array();
+        $indexKeys = array();
+
+        foreach($indexesArray as $indexType => $indexes)
+        {
+
+            switch($indexType)
+            {
+
+                case 'PRIMARY_KEY':
+                    foreach($indexes as $index)
+                    {
+
+                        array_push($primaryKeys, $index['field']);
+
+                    }
+                    break;
+
+                case 'UNIQUE_KEY':
+                    foreach($indexes as $index)
+                    {
+
+                        array_push($uniqueKeys, $index['field']);
+
+                    }
+                    break;
+
+                default:
+                    foreach($indexes as $index)
+                    {
+
+                        array_push($indexKeys, $index['field']);
+
+                    }
+
+
+            }
+
+        }
+
+        if(count($primaryKeys) > 0){ $indexesSql .= 'PRIMARY KEY (' . implode(', ', $primaryKeys)  . '),';}
+        if(count($uniqueKeys) > 0){ $indexesSql .= 'UNIQUE KEY (' . implode(', ', $uniqueKeys)  . '),';}
+        if(count($indexKeys) > 0){ $indexesSql .= 'INDEX (' . implode(', ', $indexKeys)  . '),';}
+
+        unset($indexesArray);
+
+        $indexesSql = '';
+
+        if($indexesSql == ''){ $updateFieldSql = substr($updateFieldSql, 0, -1);}
+
+        $indexesSql = substr($indexesSql, 0, -1);
 
         //Query to update the table only if it already exists
         $query = '
         ALTER TABLE ' . $table . '
         ' . $updateFieldSql . '
+        ' . $indexesSql . '
         ';
 
         $this->deleteNonSchemaFields($table, $settings);
