@@ -447,8 +447,6 @@ class Schematic
 
         $updateFieldSql = substr($updateFieldSql, 0, -1);
 
-        if($foreignKeysSql != ''){ $this->foreignKeysSql = 'ALERT TABLE ' . $table . ' ' . $foreignKeysSql;}
-
         //Query to update the table only if it already exists
         $query = '
         ALTER TABLE ' . $table . '
