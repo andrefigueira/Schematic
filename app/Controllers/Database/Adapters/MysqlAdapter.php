@@ -238,7 +238,11 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
     private function fetchTables()
     {
 
-        $result = $this->db->query('SHOW tables;');
+        $result = $this->db->query('
+        SELECT table_name AS tables
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE()
+        ');
 
         if($result)
         {
@@ -248,7 +252,7 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
             while($row = $result->fetch_object())
             {
 
-                $resultsObj->{$row->Tables_in_promotions} = $this->fetchFields($row->Tables_in_promotions);
+                $resultsObj->{$row->tables} = $this->fetchFields($row->tables);
 
             }
 
