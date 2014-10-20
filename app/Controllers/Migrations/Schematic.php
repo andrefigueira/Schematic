@@ -6,24 +6,17 @@
  *
  * @author <Andre Figueira> andre.figueira@me.com
  * @package Schematic
- * @version 1.4.1
+ * @version 1.4.2
  *
  */
 
 namespace Controllers\Migrations;
 
-use Controllers\Database\DatabaseInterface;
-use Controllers\Logger\LogInterface;
-use Controllers\Cli\OutputInterface;
-
-class Schematic
+class Schematic extends AbstractSchematic
 {
 
     /** @var string The base directory for the schematic install */
     protected $baseDir = '';
-
-    /** @var string The default schema directory */
-    protected $schemaDir = '';
 
     /** @var The property which contains information of the schema */
     protected $schema;
@@ -49,97 +42,9 @@ class Schematic
     /** @var DatabaseInterface The Database adapter currently in use */
     protected $dbAdapter;
 
-    /** @var string The environment that the Schematic is running on */
-    protected $environment;
-
-    /** @var object Object of properties pertainent to the database connected to */
-    protected $environmentConfigs;
-
     protected $foreignKeysSql;
 
     protected $indexesArray;
-
-    /**
-     * We're injecting a logger and a database adapter into the Schematic which are interchangeable
-     *
-     * @param LogInterface $log
-     * @param DatabaseInterface $dbAdapter
-     * @param OutputInterface $output
-     */
-    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, OutputInterface $output)
-    {
-
-        $this->log = $log;
-        $this->dbAdapter = $dbAdapter;
-        $this->output = $output;
-
-        return $this;
-
-    }
-
-    /**
-     * Setter for the working directory
-     *
-     * @param $dir
-     * @return $this
-     */
-    public function setDir($dir)
-    {
-
-        $this->schemaDir = $dir;
-
-        $this->output->writeln('Set directory to: ' . $dir);
-
-        return $this;
-
-    }
-
-    /**
-     * Setter and binder of environment configs for the database for which we are managing
-     *
-     * @param $environment
-     * @return $this
-     * @throws \Exception
-     */
-    public function setEnvironmentConfigs($environment)
-    {
-
-        $this->environment = $environment;
-
-        $this->bindEnvironmentConfigs();
-
-        return $this;
-
-    }
-
-    /**
-     * Bind the environment configs to properties
-     *
-     * @throws \Exception
-     */
-    private function bindEnvironmentConfigs()
-    {
-
-        $environmentPath = $this->schemaDir . 'config/';
-        $environmentFile = $environmentPath . $this->environment . '.json';
-
-        if($environmentFile)
-        {
-
-            $this->environmentConfigs = @file_get_contents($environmentFile);
-            $this->environmentConfigs = json_decode($this->environmentConfigs);
-
-            $this->setDbAdapterConfigs();
-
-        }
-        else
-        {
-
-            throw new \Exception('Unable to load environment configs file: ' . $environmentFile);
-
-        }
-
-    }
 
     /**
      * Set the schema file to be used currently
@@ -166,22 +71,6 @@ class Schematic
     }
 
     /**
-     * Sets up database adapter configurations
-     *
-     * @return void
-     */
-    private function setDbAdapterConfigs()
-    {
-
-        $this->dbAdapter
-            ->setHost($this->environmentConfigs->host)
-            ->setUsername($this->environmentConfigs->user)
-            ->setPassword($this->environmentConfigs->pass)
-            ->connect();
-
-    }
-
-    /**
      * Checks if the schema file exists, if it does, assigns the json_decoded schema file to a schema property within the instance
      *
      * @throws \Exception
@@ -189,7 +78,7 @@ class Schematic
     public function exists()
     {
 
-        $this->realSchemaDir = $this->schemaDir;
+        $this->realSchemaDir = $this->directory;
 
         if(is_dir($this->realSchemaDir))
         {
@@ -210,7 +99,7 @@ class Schematic
                     if($this->schema)
                     {
 
-                        $this->schema = json_decode($this->schema);
+                        $this->schema = $this->fileGenerator->convertToObject($this->schema);
 
                     }
                     else
@@ -679,6 +568,32 @@ class Schematic
     }
 
     /**
+     * Runs the foreign keys update
+     */
+    public function applyForeignKeys()
+    {
+
+        if($this->foreignKeysSql != '')
+        {
+
+            if($this->dbAdapter->multiQuery($this->foreignKeysSql))
+            {
+
+                $this->output->writeln('<info>Applied foreign keys successfully</info>');
+
+            }
+
+        }
+        else
+        {
+
+            $this->output->writeln('<info>No foreign keys to be applied</info>');
+
+        }
+
+    }
+
+    /**
      * Runs through the directory and executes for all of the schema files in the schema directory
      *
      * @throws \Exception
@@ -686,7 +601,7 @@ class Schematic
     public function run()
     {
 
-        $dir = new \DirectoryIterator($this->schemaDir);
+        $dir = new \DirectoryIterator($this->directory);
 
         foreach($dir as $fileInfo)
         {
@@ -716,32 +631,6 @@ class Schematic
         $this->applyForeignKeys();
 
         $this->dbAdapter->commit();
-
-    }
-
-    /**
-     * Runs the foreign keys update
-     */
-    public function applyForeignKeys()
-    {
-
-        if($this->foreignKeysSql != '')
-        {
-
-            if($this->dbAdapter->multiQuery($this->foreignKeysSql))
-            {
-
-                $this->output->writeln('<info>Applied foreign keys successfully</info>');
-
-            }
-
-        }
-        else
-        {
-
-            $this->output->writeln('<info>No foreign keys to be applied</info>');
-
-        }
 
     }
 

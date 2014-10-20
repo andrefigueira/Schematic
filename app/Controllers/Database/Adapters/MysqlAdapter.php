@@ -32,9 +32,20 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
     public function createDatabase($name)
     {
 
-        $result = $this->db->query('CREATE DATABASE IF NOT EXISTS `' . $name . '`');
+        if($name == '')
+        {
 
-        return $result;
+            throw new \Exception('Database name cannot be empty');
+
+        }
+        else
+        {
+
+            $result = $this->db->query('CREATE DATABASE IF NOT EXISTS `' . $name . '`');
+
+            return $result;
+
+        }
 
     }
 
