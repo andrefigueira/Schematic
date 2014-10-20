@@ -11,15 +11,17 @@ namespace Controllers\Migrations\Generators\Adapters;
 use Controllers\Migrations\Generators\AbstractFileGenerator;
 use Controllers\Migrations\Generators\FileGeneratorInferface;
 use Controllers\Cli\OutputInterface;
+use Symfony\Component\Yaml\Dumper;
+use Symfony\Component\Yaml\Parser;
 
-class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferface
+class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferface
 {
 
     /** @var string Filename of the file we are attempting to create */
     protected $fileName;
 
     /** @var string The extension of the file to be generated */
-    protected $fileExtension = '.json';
+    protected $fileExtension = '.yaml';
 
     /** @var object The instance of the output interface */
     protected $output;
@@ -192,30 +194,16 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
 
     }
 
-    /**
-     * Converts raw data to an object
-     *
-     * @param $data
-     * @return mixed|void
-     * @throws \Exception
-     */
     public function convertToObject($data)
     {
 
-        $results = @json_decode($data);
+        $yaml = new Parser();
 
-        if(is_object($results))
-        {
+        $value = $yaml->parse($data);
 
-            return $results;
+        $result = $value = json_decode(json_encode($value));
 
-        }
-        else
-        {
-
-            throw new \Exception('An error occured converting the raw config data into JSON');
-
-        }
+        return $result;
 
     }
 
@@ -223,13 +211,14 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      * Converts the created content to the correct format and returns the result
      *
      * @param $content
-     * @return mixed|void
      * @throws \Exception
      */
     public function convertToFormat($content)
     {
 
-        $result = @json_encode($content, JSON_PRETTY_PRINT);
+        $dumper = new Dumper();
+
+        $result = $dumper->dump($content, 10);
 
         if($result)
         {
@@ -240,7 +229,7 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
         else
         {
 
-            throw new \Exception('Unable to convert content to JSON');
+            throw new \Exception('Unable to convert content to YAML');
 
         }
 

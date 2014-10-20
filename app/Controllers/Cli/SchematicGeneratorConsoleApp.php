@@ -31,6 +31,11 @@ class SchematicGeneratorConsoleApp extends Command
                 InputArgument::REQUIRED,
                 'What do you want to call the schema file?'
             )
+            ->addArgument(
+                'fileType',
+                InputArgument::REQUIRED,
+                'Which type of schema file do you want to make?'
+            )
         ;
     }
 
@@ -39,12 +44,16 @@ class SchematicGeneratorConsoleApp extends Command
 
         $name = $input->getArgument('name');
         $directory = $input->getArgument('dir');
+        $fileType = $input->getArgument('fileType');
+
+        $directory = $directory . $fileType . '/';
 
         $output->writeln('<info>Generating schema file</info>');
 
         $schematicFileGenerator = new SchematicFileGenerator();
         $schematicFileGenerator
-            ->setDir($directory)
+            ->setFileFormatType($fileType)
+            ->setDirectory($directory)
             ->setName($name)
             ->run();
 

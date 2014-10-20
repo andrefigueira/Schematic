@@ -19,13 +19,31 @@ class SchematicFileGenerator
     /** @var string The schema file to be created */
     protected $schemaFile;
 
+    /** @var string the format type to use */
+    protected $formatType;
+
+    /**
+     * Setter for the format type
+     *
+     * @param $formatType
+     * @return $this
+     */
+    public function setFileFormatType($formatType)
+    {
+
+        $this->formatType = $formatType;
+
+        return $this;
+
+    }
+
     /**
      * The setter for the directory
      *
      * @param $directory
      * @return $this
      */
-    public function setDir($directory)
+    public function setDirectory($directory)
     {
 
         $this->directory = $directory;
@@ -71,7 +89,7 @@ class SchematicFileGenerator
 
         $directory = __DIR__;
 
-        $templateFile = $directory . '/template/schema.json';
+        $templateFile = $directory . '/template/schema.' . $this->formatType;
 
         if(file_exists($templateFile))
         {
@@ -111,7 +129,7 @@ class SchematicFileGenerator
 
         $template = $this->fetchTemplate();
 
-        $this->schemaFile = $this->directory . $this->name . '.json';
+        $this->schemaFile = $this->directory . $this->name . '.' . $this->formatType;
 
         if(file_exists($this->schemaFile)){ throw new \Exception('Schema file already exists: ' . $this->schemaFile);}
 

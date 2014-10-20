@@ -6,6 +6,7 @@ use Controllers\Cli\OutputAdapters\SymfonyOutput;
 use Controllers\Database\Adapters\MysqlAdapter;
 use Controllers\Logger\Log;
 use Controllers\Migrations\Generators\Adapters\JsonAdapter;
+use Controllers\Migrations\Generators\Adapters\YamlAdapter;
 use Controllers\Migrations\SchematicMappingImport;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -74,18 +75,26 @@ class SchematicMappingImportConsoleApp extends Command
                 $fileTypeGenerator = new JsonAdapter($schematicOutput);
                 break;
 
+            case 'yaml':
+                $fileTypeGenerator = new YamlAdapter($schematicOutput);
+                break;
+
             default:
                 throw new \Exception('We can only generate JSON files for now...');
 
         }
 
+        $directory = $directory . $fileType . '/';
+
         $output->writeln('<info>Beginning migrations</info>');
 
         $log = new Log();
 
-        $schematic = new SchematicMappingImport($log, $db, $fileTypeGenerator);
+        $schematic = new SchematicMappingImport($log, $db, $schematicOutput, $fileTypeGenerator);
+
         $schematic
-            ->setDir($directory)
+            ->setFileFormatType($fileType)
+            ->setDirectory($directory)
             ->setDatabase($dbName)
             ->setEnvironmentConfigs($environment)
             ->run()

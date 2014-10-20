@@ -20,7 +20,7 @@ abstract class AbstractFileGenerator
      * @param $directory
      * @return $this
      */
-    public function setDir($directory)
+    public function setDirectory($directory)
     {
 
         $this->directory = $directory;

@@ -1,7 +1,7 @@
 {
     "schematic": {
         "name": "Schematic",
-        "version": "1.0"
+        "version": "1.4.1"
     },
     "database": {
         "general": {
@@ -17,17 +17,27 @@
                         "type": "int(11)",
                         "null": false,
                         "unsigned": true,
-                        "index": "PRIMARY KEY",
                         "autoIncrement": true,
-                        "comment": "Id field for listing ids"
+                        "index": "PRIMARY KEY"
+                    },
+                    "client_id": {
+                        "type": "int(11)",
+                        "null": false,
+                        "unsigned": true,
+                        "autoIncrement": false,
+                        "index": "PRIMARY KEY"
                     },
                     "name": {
                         "type": "varchar(128)",
-                        "null": false
+                        "null": false,
+                        "unsigned": false,
+                        "autoIncrement": false
                     },
                     "created_date": {
                         "type": "datetime",
-                        "null": false
+                        "null": false,
+                        "unsigned": false,
+                        "autoIncrement": false
                     }
                 }
             }
