@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * Cli tool for Schematic

@@ -1,0 +1,6 @@
+{
+    "directories": ["app", "vendor"],
+    "stub": true,
+    "main": "cli.php",
+    "output": "schematic.phar"
+}
