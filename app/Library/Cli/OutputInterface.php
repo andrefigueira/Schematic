@@ -1,6 +1,6 @@
 <?php
 
-namespace Controllers\Cli;
+namespace Library\Cli;
 
 interface OutputInterface
 {

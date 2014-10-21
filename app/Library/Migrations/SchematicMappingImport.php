@@ -1,6 +1,6 @@
 <?php
 
-namespace Controllers\Migrations;
+namespace Library\Migrations;
 
 class SchematicMappingImport extends AbstractSchematic
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace Controllers\Cli;
+namespace Library\Cli;
 
-use Controllers\Cli\OutputAdapters\SymfonyOutput;
-use Controllers\Database\Adapters\MysqlAdapter;
-use Controllers\Logger\Log;
-use Controllers\Migrations\Schematic;
-use Controllers\Migrations\SchematicFileGenerator;
+use Library\Cli\OutputAdapters\SymfonyOutput;
+use Library\Database\Adapters\MysqlAdapter;
+use Library\Logger\Log;
+use Library\Migrations\Schematic;
+use Library\Migrations\SchematicFileGenerator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;

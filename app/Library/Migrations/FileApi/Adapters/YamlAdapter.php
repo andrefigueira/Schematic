@@ -6,11 +6,11 @@
  * @author Andre Figueira <andre.figueira@me.com>
  */
 
-namespace Controllers\Migrations\Generators\Adapters;
+namespace Library\Migrations\FileApi\Adapters;
 
-use Controllers\Migrations\Generators\AbstractFileGenerator;
-use Controllers\Migrations\Generators\FileGeneratorInferface;
-use Controllers\Cli\OutputInterface;
+use Library\Migrations\FileApi\AbstractFileGenerator;
+use Library\Migrations\FileApi\FileGeneratorInferface;
+use Library\Cli\OutputInterface;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Parser;
 

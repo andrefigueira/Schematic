@@ -1,8 +1,8 @@
 <?php
 
-namespace Controllers\Cli\OutputAdapters;
+namespace Library\Cli\OutputAdapters;
 
-use Controllers\Cli\OutputInterface;
+use Library\Cli\OutputInterface;
 use Symfony\Component\Console\Output\Output;
 
 class SymfonyOutput implements OutputInterface

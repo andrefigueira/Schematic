@@ -3,6 +3,11 @@
  * This bootstrap file handles the including of the autoloader and sets up some constants for the application
  */
 
+date_default_timezone_set('UTC');
+
+define('APP_NAME', 'Schematic');
+define('APP_VERSION', '1.4.3');
+
 try
 {
 
@@ -39,8 +44,3 @@ catch(\Exception $e)
     echo $e->getMessage();
 
 }
-
-date_default_timezone_set('UTC');
-
-define('APP_NAME', 'Schematic');
-define('APP_VERSION', '1.4.3');

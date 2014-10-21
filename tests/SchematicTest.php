@@ -8,13 +8,13 @@ class SchematicTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
 
-        $log = new \Controllers\Logger\Log();
-        $mysql = new \Controllers\Database\Adapters\MysqlAdapter();
+        $log = new \Library\Logger\Log();
+        $mysql = new \Library\Database\Adapters\MysqlAdapter();
         $symfonyOutput = new Symfony\Component\Console\Output\ConsoleOutput();
-        $output = new \Controllers\Cli\OutputAdapters\SymfonyOutput($symfonyOutput);
-        $fileGenerator = new \Controllers\Migrations\Generators\Adapters\JsonAdapter($output);
+        $output = new \Library\Cli\OutputAdapters\SymfonyOutput($symfonyOutput);
+        $fileGenerator = new \Library\Migrations\FileApi\Adapters\JsonAdapter($output);
 
-        $this->schematic = new \Controllers\Migrations\Schematic($log, $mysql, $output, $fileGenerator);
+        $this->schematic = new \Library\Migrations\Schematic($log, $mysql, $output, $fileGenerator);
 
     }
 

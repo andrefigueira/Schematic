@@ -5,7 +5,7 @@
  *
  */
 
-namespace Controllers\Logger;
+namespace Library\Logger;
 
 class Log implements LogInterface
 {

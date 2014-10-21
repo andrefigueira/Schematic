@@ -10,7 +10,7 @@
  *
  */
 
-namespace Controllers\Migrations;
+namespace Library\Migrations;
 
 class Schematic extends AbstractSchematic
 {
