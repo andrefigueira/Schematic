@@ -15,6 +15,19 @@ A MySQL schema generator in PHP define your schemas as JSON then run the script 
             "mysql/schematic": "1.*"
         }
     }
+    
+###Install it Globally
+---
+
+- Clone it to your machine
+- Then run cd to where you clone the repo
+- Then run the following commands
+
+    $ chmod +x schematic.phar
+    
+    $ mv schematic.phar /usr/bin/local/schematic
+    
+Schematic will now be available globally for you!
 
 ###Schema format
 ---
