@@ -211,6 +211,7 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      * Converts the created content to the correct format and returns the result
      *
      * @param $content
+     * @return mixed|void
      * @throws \Exception
      */
     public function convertToFormat($content)
