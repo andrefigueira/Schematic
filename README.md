@@ -133,3 +133,6 @@ Note that currently foreign keys are only added, but not removed, If created a n
   `migrations:mapping    Generates the database schema based on an existing database`
 
 The script also creates a log of all of the database changes which are made.
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/andrefigueira/schematic/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
