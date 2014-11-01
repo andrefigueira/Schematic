@@ -1,6 +1,6 @@
 schematic:
     name: Schematic
-    version: 1.4.1
+    version: 1.4.3
 database:
     general:
         name: schematic
@@ -17,13 +17,17 @@ database:
                     autoIncrement: true
                     index: 'PRIMARY KEY'
                 client_id:
-                    type: int(11)
+                    type: int(24)
                     'null': false
                     unsigned: true
                     autoIncrement: false
-                    index: 'PRIMARY KEY'
                 name:
                     type: varchar(128)
+                    'null': false
+                    unsigned: false
+                    autoIncrement: false
+                description:
+                    type: varchar(256)
                     'null': false
                     unsigned: false
                     autoIncrement: false

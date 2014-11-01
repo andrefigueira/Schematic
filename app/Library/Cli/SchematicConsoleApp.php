@@ -1,13 +1,13 @@
 <?php
 
-namespace Controllers\Cli;
+namespace Library\Cli;
 
-use Controllers\Cli\OutputAdapters\SymfonyOutput;
-use Controllers\Database\Adapters\MysqlAdapter;
-use Controllers\Logger\Log;
-use Controllers\Migrations\Generators\Adapters\JsonAdapter;
-use Controllers\Migrations\Generators\Adapters\YamlAdapter;
-use Controllers\Migrations\Schematic;
+use Library\Cli\OutputAdapters\SymfonyOutput;
+use Library\Database\Adapters\MysqlAdapter;
+use Library\Logger\Log;
+use Library\Migrations\FileApi\Adapters\JsonAdapter;
+use Library\Migrations\FileApi\Adapters\YamlAdapter;
+use Library\Migrations\Schematic;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

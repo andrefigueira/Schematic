@@ -1,9 +1,9 @@
 <?php
 /**
- * Defines what must be implemented for other file generators
+ * Defines what must be implemented for other file FileApi
  */
 
-namespace Controllers\Migrations\Generators;
+namespace Library\Migrations\FileApi;
 
 interface FileGeneratorInferface
 {

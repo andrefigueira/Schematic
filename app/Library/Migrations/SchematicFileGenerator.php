@@ -5,7 +5,7 @@
  * @author Andre Figueira <andre.figueira@me.com>
  */
 
-namespace Controllers\Migrations;
+namespace Library\Migrations;
 
 class SchematicFileGenerator
 {
