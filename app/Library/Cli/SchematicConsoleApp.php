@@ -20,7 +20,7 @@ class SchematicConsoleApp extends Command
     {
         $this
             ->setName('migrations:execute')
-            ->setDescription('Executes the database migration based on the JSON schema files')
+            ->setDescription('Executes the database migration based on the schema files')
             ->addArgument(
                 'dir',
                 InputArgument::REQUIRED,

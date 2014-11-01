@@ -20,7 +20,7 @@ class SchematicGeneratorConsoleApp extends Command
     {
         $this
             ->setName('migrations:generate')
-            ->setDescription('Generates the database schema JSON files')
+            ->setDescription('Generates the database schema files')
             ->addArgument(
                 'dir',
                 InputArgument::REQUIRED,

@@ -29,21 +29,4 @@ class FileApiJsonAdapterTest extends PHPUnit_Framework_TestCase
 
     }
 
-    public function testConvertToFormatCorrectlyConvertsToFormat()
-    {
-
-        $array = array(
-            'testkey' => 'testvalue'
-        );
-
-        $result = trim($this->adapter->convertToFormat($array));
-
-        $expected = '{
-    "testkey": "testvalue"
-}';
-
-        $this->assertSame($expected, $result);
-
-    }
-
 }

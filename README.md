@@ -1,7 +1,7 @@
 #MySQL Schematic
 ---
 
-A MySQL schema generator in PHP define your schemas as JSON then run the script to generate your database or maintain it.
+A MySQL schema generator in PHP define your schemas as json or yaml then run the script to generate your database or maintain it.
 
 
 [![Build Status](https://travis-ci.org/andrefigueira/Schematic.svg?branch=master)](https://travis-ci.org/andrefigueira/Schematic)
@@ -32,7 +32,7 @@ Schematic will now be available globally for you!
 ###Schema format
 ---
 
-Schema is defined in JSON files, these must be stored in the schema folder in json files representing the table they are
+Schema is defined in schema files, these must be stored in the schema folder in json files representing the table they are
 for, e.g. (Make sure that you create the schema folder in the root of your project)
 
 	~/ProjectFolder/schemas/table_name.json
