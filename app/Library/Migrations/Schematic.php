@@ -331,8 +331,10 @@ class Schematic extends AbstractSchematic
 
                         $this->output->writeln('Modifying column: ' . $field);
 
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+
                         $updateFieldSql .= '
-                        MODIFY COLUMN `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+                        MODIFY COLUMN `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
                         $previousColumn = $fieldSettings->rename;
 
@@ -342,8 +344,10 @@ class Schematic extends AbstractSchematic
 
                         $this->output->writeln('Changing column: ' . $field);
 
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+
                         $updateFieldSql .= '
-                        CHANGE COLUMN `' . $field . '` `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+                        CHANGE COLUMN `' . $field . '` `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
                         $previousColumn = $field;
 
@@ -355,8 +359,10 @@ class Schematic extends AbstractSchematic
 
                     $this->output->writeln('Modifying column: ' . $field);
 
+                    if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+
                     $updateFieldSql .= '
-                    MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+                    MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
                     $previousColumn = $field;
 
