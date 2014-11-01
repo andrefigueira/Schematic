@@ -7,10 +7,10 @@
  * @author Andre Figueira <andre.figueira@me.com>
  */
 
-namespace Controllers\Database\Adapters;
+namespace Library\Database\Adapters;
 
-use Controllers\Database\AbstractDatabaseAdapter;
-use Controllers\Database\DatabaseInterface;
+use Library\Database\AbstractDatabaseAdapter;
+use Library\Database\DatabaseInterface;
 
 class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
 {

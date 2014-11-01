@@ -1,8 +1,8 @@
 <?php
 /**
- * Schematic is a MySQL database creation and maintenance script, It allows you to define a schema in JSON and run a
- * simple script to do the creation or updates to your database, If you change your schema file and run the script it
- * will then run through and make the updates to the database.
+ * Schematic is a MySQL database creation and maintenance script, It allows you to define a schema in a specific format
+ * and run a simple script to do the creation or updates to your database, If you change your schema file and run the
+ * script it will then run through and make the updates to the database.
  *
  * @author <Andre Figueira> andre.figueira@me.com
  * @package Schematic
@@ -10,7 +10,7 @@
  *
  */
 
-namespace Controllers\Migrations;
+namespace Library\Migrations;
 
 class Schematic extends AbstractSchematic
 {
@@ -71,11 +71,11 @@ class Schematic extends AbstractSchematic
     }
 
     /**
-     * Checks if the schema file exists, if it does, assigns the json_decoded schema file to a schema property within the instance
+     * Checks if the schema file exists, if it does, assigns the interpretted schema file to a schema property within the instance
      *
      * @throws \Exception
      */
-    public function exists()
+    private function exists()
     {
 
         $this->realSchemaDir = $this->directory;
@@ -113,7 +113,7 @@ class Schematic extends AbstractSchematic
                 else
                 {
 
-                    throw new \Exception('Schema json file does not exist: ' . $specificSchemaConfFile);
+                    throw new \Exception('Schema file does not exist: ' . $specificSchemaConfFile);
 
                 }
 
@@ -168,7 +168,7 @@ class Schematic extends AbstractSchematic
         foreach($settings->fields as $field => $fieldSettings)
         {
 
-            if(!isset($fieldSettings->index)){ $fieldSettings->index = '';}
+            if(isset($fieldSettings->index) == false){ $fieldSettings->index = '';}
             if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
@@ -214,30 +214,15 @@ class Schematic extends AbstractSchematic
             {
 
                 case 'PRIMARY_KEY':
-                    foreach($indexes as $index)
-                    {
-
-                        array_push($primaryKeys, $index['field']);
-
-                    }
+                    foreach($indexes as $index){ array_push($primaryKeys, $index['field']);}
                     break;
 
                 case 'UNIQUE_KEY':
-                    foreach($indexes as $index)
-                    {
-
-                        array_push($uniqueKeys, $index['field']);
-
-                    }
+                    foreach($indexes as $index){ array_push($uniqueKeys, $index['field']);}
                     break;
 
                 default:
-                    foreach($indexes as $index)
-                    {
-
-                        array_push($indexKeys, $index['field']);
-
-                    }
+                    foreach($indexes as $index){ array_push($indexKeys, $index['field']);}
 
 
             }
@@ -254,7 +239,6 @@ class Schematic extends AbstractSchematic
 
         $indexesSql = substr($indexesSql, 0, -1);
 
-        //Query to create the table if it doesn't exist indicating a first time run
         $query = '
         CREATE TABLE IF NOT EXISTS '. $table . ' (
           ' . $addFieldSql . '
@@ -286,7 +270,7 @@ class Schematic extends AbstractSchematic
      * @return bool
      * @throws \Exception
      */
-    public function createSqlFile($table, $query)
+    private function createSqlFile($table, $query)
     {
 
         if(!is_dir($this->sqlDir))
@@ -319,31 +303,81 @@ class Schematic extends AbstractSchematic
     private function updateTable($table, $settings)
     {
 
+        $this->output->writeln('Updating table: ' . $table);
+
         $updateFieldSql = '';
         $indexesSql = '';
         $foreignKeysSql = '';
+        $previousColumn = '';
+        $columnOrdering = '';
         $indexesArray = array();
 
         foreach($settings->fields as $field => $fieldSettings)
         {
 
-            if(!isset($fieldSettings->index)){ $fieldSettings->index = '';}
+            if(isset($fieldSettings->index) == false){ $fieldSettings->index = '';}
             if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
             if(isset($fieldSettings->unsigned) && $fieldSettings->unsigned){ $fieldSettings->unsigned = 'unsigned';}else{ $fieldSettings->unsigned = '';}
 
-            if($this->dbAdapter->fieldExists($table, $field))
+            if($this->dbAdapter->fieldExists($table, $field) || (isset($fieldSettings->rename) && $this->dbAdapter->fieldExists($table, $fieldSettings->rename)))
             {
 
-                $updateFieldSql .= '
-                MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+                if(isset($fieldSettings->rename))
+                {
+
+                    if($this->dbAdapter->fieldExists($table, $fieldSettings->rename))
+                    {
+
+                        $this->output->writeln('Modifying column: ' . $field);
+
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+
+                        $updateFieldSql .= '
+                        MODIFY COLUMN `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
+
+                        $previousColumn = $fieldSettings->rename;
+
+                    }
+                    else
+                    {
+
+                        $this->output->writeln('Changing column: ' . $field);
+
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+
+                        $updateFieldSql .= '
+                        CHANGE COLUMN `' . $field . '` `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
+
+                        $previousColumn = $field;
+
+                    }
+
+                }
+                else
+                {
+
+                    $this->output->writeln('Modifying column: ' . $field);
+
+                    if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+
+                    $updateFieldSql .= '
+                    MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
+
+                    $previousColumn = $field;
+
+                }
 
             }
             else
             {
 
+                $this->output->writeln('Adding column: ' . $field);
+
+                if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+
                 $updateFieldSql .= '
-                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . ',';
+                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
             }
 
@@ -390,30 +424,15 @@ class Schematic extends AbstractSchematic
             {
 
                 case 'PRIMARY_KEY':
-                    foreach($indexes as $index)
-                    {
-
-                        array_push($primaryKeys, $index['field']);
-
-                    }
+                    foreach($indexes as $index){ array_push($primaryKeys, $index['field']);}
                     break;
 
                 case 'UNIQUE_KEY':
-                    foreach($indexes as $index)
-                    {
-
-                        array_push($uniqueKeys, $index['field']);
-
-                    }
+                    foreach($indexes as $index){ array_push($uniqueKeys, $index['field']);}
                     break;
 
                 default:
-                    foreach($indexes as $index)
-                    {
-
-                        array_push($indexKeys, $index['field']);
-
-                    }
+                    foreach($indexes as $index){ array_push($indexKeys, $index['field']);}
 
 
             }
@@ -432,7 +451,6 @@ class Schematic extends AbstractSchematic
 
         $indexesSql = substr($indexesSql, 0, -1);
 
-        //Query to update the table only if it already exists
         $query = '
         ALTER TABLE ' . $table . '
         ' . $updateFieldSql . '
@@ -473,6 +491,13 @@ class Schematic extends AbstractSchematic
 
         foreach($settings->fields as $field => $fieldSettings)
         {
+
+            if(isset($fieldSettings->rename))
+            {
+
+                array_push($newFields, $fieldSettings->rename);
+
+            }
 
             array_push($newFields, $field);
 
@@ -559,7 +584,7 @@ class Schematic extends AbstractSchematic
      * @return bool|null
      *
      */
-    public function isEmptyDir($dir)
+    private function isEmptyDir($dir)
     {
 
         if(!is_readable($dir)) return null;
@@ -570,7 +595,7 @@ class Schematic extends AbstractSchematic
     /**
      * Runs the foreign keys update
      */
-    public function applyForeignKeys()
+    private function applyForeignKeys()
     {
 
         if($this->foreignKeysSql != '')

@@ -1,11 +1,11 @@
 <?php
 
-namespace Controllers\Migrations;
+namespace Library\Migrations;
 
-use Controllers\Database\DatabaseInterface;
-use Controllers\Logger\LogInterface;
-use Controllers\Cli\OutputInterface;
-use Controllers\Migrations\Generators\FileGeneratorInferface;
+use Library\Database\DatabaseInterface;
+use Library\Logger\LogInterface;
+use Library\Cli\OutputInterface;
+use Library\Migrations\FileApi\FileGeneratorInferface;
 
 abstract class AbstractSchematic
 {

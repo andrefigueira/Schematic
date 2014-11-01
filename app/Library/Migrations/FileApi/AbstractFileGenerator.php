@@ -1,6 +1,6 @@
 <?php
 
-namespace Controllers\Migrations\Generators;
+namespace Library\Migrations\FileApi;
 
 abstract class AbstractFileGenerator
 {
