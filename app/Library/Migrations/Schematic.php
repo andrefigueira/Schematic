@@ -311,6 +311,7 @@ class Schematic extends AbstractSchematic
         $previousColumn = '';
         $columnOrdering = '';
         $indexesArray = array();
+        $renamedColumn = false;
 
         foreach($settings->fields as $field => $fieldSettings)
         {
@@ -334,7 +335,7 @@ class Schematic extends AbstractSchematic
                         if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
 
                         $updateFieldSql .= '
-                        MODIFY COLUMN `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
+MODIFY COLUMN `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
                         $previousColumn = $fieldSettings->rename;
 
@@ -342,14 +343,16 @@ class Schematic extends AbstractSchematic
                     else
                     {
 
+                        $renamedColumn = true;
+
                         $this->output->writeln('Changing column: ' . $field);
 
                         if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
 
                         $updateFieldSql .= '
-                        CHANGE COLUMN `' . $field . '` `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
+CHANGE COLUMN `' . $field . '` `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
-                        $previousColumn = $field;
+                        $previousColumn = $fieldSettings->rename;
 
                     }
 
@@ -362,7 +365,7 @@ class Schematic extends AbstractSchematic
                     if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
 
                     $updateFieldSql .= '
-                    MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
+MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
                     $previousColumn = $field;
 
@@ -376,8 +379,7 @@ class Schematic extends AbstractSchematic
 
                 if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
 
-                $updateFieldSql .= '
-                ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
+                $updateFieldSql .= 'ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
             }
 
@@ -387,13 +389,11 @@ class Schematic extends AbstractSchematic
                 if(!$this->dbAdapter->foreignKeyRelationExists($table, $field, $fieldSettings->foreignKey->table, $fieldSettings->foreignKey->field))
                 {
 
-                    $foreignKeysSql .= '
-                    ALTER TABLE ' . $table . '
-                    ADD CONSTRAINT FOREIGN KEY (' . $field . ')
-                    REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
-                    ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
-                    ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';
-                    ';
+                    $foreignKeysSql .= 'ALTER TABLE `' . $table . '`
+ADD CONSTRAINT FOREIGN KEY (' . $field . ')
+REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
+ON DELETE ' . $fieldSettings->foreignKey->on->delete . '
+ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';';
 
                 }
 
@@ -448,14 +448,11 @@ class Schematic extends AbstractSchematic
         $indexesSql = '';
 
         if($indexesSql == ''){ $updateFieldSql = substr($updateFieldSql, 0, -1);}
-
         $indexesSql = substr($indexesSql, 0, -1);
 
-        $query = '
-        ALTER TABLE ' . $table . '
-        ' . $updateFieldSql . '
-        ' . $indexesSql . '
-        ';
+        $query = 'ALTER TABLE `' . $table . '`
+' . $updateFieldSql . '
+' . $indexesSql . ';';
 
         $this->deleteNonSchemaFields($table, $settings);
 
@@ -470,6 +467,14 @@ class Schematic extends AbstractSchematic
 
             $this->log->write($message);
             $this->output->writeln($message);
+
+            if($renamedColumn)
+            {
+
+                $this->output->writeln('!!! Renamed a column, remap your database now with `schematic migrations:mapping`');
+
+            }
+
 
         }
 
