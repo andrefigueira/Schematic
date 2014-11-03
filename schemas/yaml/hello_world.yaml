@@ -26,6 +26,7 @@ database:
                     'null': false
                     unsigned: false
                     autoIncrement: false
+                    rename: full_name
                 description:
                     type: varchar(256)
                     'null': false
