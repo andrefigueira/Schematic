@@ -1,10 +1,4 @@
-   _____      __                         __  _     
-  / ___/_____/ /_  ___  ____ ___  ____ _/ /_(______
-  \__ \/ ___/ __ \/ _ \/ __ `__ \/ __ `/ __/ / ___/
- ___/ / /__/ / / /  __/ / / / / / /_/ / /_/ / /__  
-/____/\___/_/ /_/\___/_/ /_/ /_/\__,_/\__/_/\___/  
-                                                   
-                                        
+## Schematic - Database Migrations Tool
 
 A database migrations tool, allows for easy database maintenance in a way that is easy to setup in a continuous integration environment.
 
