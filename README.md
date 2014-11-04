@@ -1,31 +1,45 @@
-#MySQL Schematic
----
+   _____      __                         __  _     
+  / ___/_____/ /_  ___  ____ ___  ____ _/ /_(______
+  \__ \/ ___/ __ \/ _ \/ __ `__ \/ __ `/ __/ / ___/
+ ___/ / /__/ / / /  __/ / / / / / /_/ / /_/ / /__  
+/____/\___/_/ /_/\___/_/ /_/ /_/\__,_/\__/_/\___/  
+                                                   
+                                        
 
-A MySQL schema generator in PHP define your schemas as json or yaml then run the script to generate your database or maintain it.
-
+A database migrations tool, allows for easy database maintenance in a way that is easy to setup in a continuous integration environment.
 
 [![Build Status](https://travis-ci.org/andrefigueira/Schematic.svg?branch=master)](https://travis-ci.org/andrefigueira/Schematic)
 [![Latest Stable Version](https://poser.pugx.org/mysql/schematic/v/stable.svg)](https://packagist.org/packages/mysql/schematic) [![Total Downloads](https://poser.pugx.org/mysql/schematic/downloads.svg)](https://packagist.org/packages/mysql/schematic) [![Latest Unstable Version](https://poser.pugx.org/mysql/schematic/v/unstable.svg)](https://packagist.org/packages/mysql/schematic) [![License](https://poser.pugx.org/mysql/schematic/license.svg)](https://packagist.org/packages/mysql/schematic)
-
-###Install via Composer
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/andrefigueira/schematic/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+###Install locally via Composer
 ---
 
     {
         require: {
-            "mysql/schematic": "1.*"
+            "mysql/schematic": "1.*.*"
         }
     }
     
 ###Install it Globally
 ---
 
-- Clone it to your machine
-- Then run cd to where you clone the repo
-- Then run the following commands
+- Run the following commands:
+
+Download the PHAR file:
+
+    $ wget https://github.com/andrefigueira/Schematic/blob/master/schematic.phar
+
+Make the PHAR package executable
 
     $ chmod +x schematic.phar
     
+Move it to the user bin folder
+    
     $ mv schematic.phar /usr/bin/local/schematic
+    
+Then use Schematic
+
+    $ schematic
     
 Schematic will now be available globally for you!
 
@@ -35,7 +49,7 @@ Schematic will now be available globally for you!
 Schema is defined in schema files, these must be stored in the schema folder in json files representing the table they are
 for, e.g. (Make sure that you create the schema folder in the root of your project)
 
-	~/ProjectFolder/schemas/table_name.json
+	~/ProjectFolder/schemas/table_name.yaml
 
 The schema file contains all of the configuration of the database in order to create it or amend it, see an example below.
 
@@ -47,62 +61,56 @@ will stop running and throw and exception.
 ###Example Schema
 ---
 
-    {
-        "schematic": {
-            "name": "NAME OF THE SCHEMATIC",
-            "version": "1.0"
-        },
-        "database": {
-            "general": {
-                "name": "schematic",
-                "charset": "utf8",
-                "collation": "utf8_general_ci",
-                "engine": "InnoDB"
-            },
-            "tables": {
-                "TABLENAMEHERE": {
-                    "fields": {
-                        "id": {
-                            "type": "int(11)",
-                            "null": false,
-                            "unsigned": true,
-                            "index": "PRIMARY KEY",
-                            "autoIncrement": true,
-                            "comment": "Id field for listing ids"
-                        },
-                        "name": {
-                            "type": "varchar(256)",
-                            "null": false
-                        }
-                        "productId": {
-                            "type": "int(11)",
-                            "null": false,
-                            "unsigned": true,
-                            "index": "INDEX",
-                            "foreignKey": {
-                                "table": "products",
-                                "field": "id",
-                                "on": {
-                                    "delete": "CASCADE",
-                                    "update": "CASCADE"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    schematic:
+        name: Schematic
+        version: 1.4.5
+    database:
+        general:
+            name: schematic
+            charset: utf8
+            collation: utf8_general_ci
+            engine: InnoDB
+        tables:
+            hello_world:
+                fields:
+                    id:
+                        type: int(11)
+                        'null': false
+                        unsigned: true
+                        autoIncrement: true
+                        index: 'PRIMARY KEY'
+                    client_id:
+                        type: int(24)
+                        'null': false
+                        unsigned: true
+                        autoIncrement: false
+                    name:
+                        type: varchar(128)
+                        'null': false
+                        unsigned: false
+                        autoIncrement: false
+                        rename: full_name
+                    description:
+                        type: varchar(256)
+                        'null': false
+                        unsigned: false
+                        autoIncrement: false
+                    created_date:
+                        type: datetime
+                        'null': false
+                        unsigned: false
+                        autoIncrement: false
+
 
 ---
 
-Note that currently foreign keys are only added, but not removed, If created a new database with constraints, you must run the update twice to add the constraints
+Note that currently foreign keys are only added, but not removed, If created a new database with constraints, you must run the update twice to add the constraints.
 
-#####Usage:
+##### Usage:
 
-`php cli.php  [options] command [arguments]`
+`schematic  [options] command [arguments]`
 
-#####Options:
+##### Options:
 
   `--help           -h Display this help message.`
   
@@ -118,13 +126,13 @@ Note that currently foreign keys are only added, but not removed, If created a n
   
   `--no-interaction -n Do not ask any interactive question.`
 
-#####Available commands:
+##### Available commands:
 
   `help                  Displays help for a command`
   
   `list                  Lists commands`
   
-#####migrations
+##### Migrations
 
   `migrations:execute    Executes the database migration based on the JSON schema files`
   
@@ -133,6 +141,4 @@ Note that currently foreign keys are only added, but not removed, If created a n
   `migrations:mapping    Generates the database schema based on an existing database`
 
 The script also creates a log of all of the database changes which are made.
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/andrefigueira/schematic/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
