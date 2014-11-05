@@ -3,8 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Schematic Database Migrations by andrefigueira</title>
-
+    <title>Schematic Database Migrations - PHP Database Migrations Engine</title>
+	<meta name="description" content="Schematic makes it extremely easy to manage and migrate your database, and is all managed with simple schema files to describe your database...">
+	<meta name="keywords" content="database,mysql,php,migrations,engine,sql,doctrine,phinx">
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
@@ -34,22 +35,21 @@
 
         <h3>JSON and YAML supported</h3>
 
-        <p>By default you can use JSON or YAML in the Schematic format to generate a database easily, there is also an in-built function which can map an existing database to configuration files, in essense backing up your database. Schematic schemas are meant to be kept within your VCS allowing you to keep track of your database changes, and used in conjunction with a tool like <a target="_blank" href="http://capistranorb.com">Capistrano</a> become extremely powerful.</p>
+        <p>By default you can use JSON or YAML in the Schematic format to generate a database easily, there is also an in-built function which can map an existing database to configuration files, in essence backing up your database. Schematic schemas are meant to be kept within your VCS allowing you to keep track of your database changes, and used in conjunction with a tool like <a target="_blank" href="http://capistranorb.com">Capistrano</a> become extremely powerful.</p>
 
-        <h3>How to install</h3>
+        <h3>How to install globally</h3>
 
 <p>Add the following to your composer file.</p>
 
-<pre><code>{
-    "require": {
-        "mysql\schematic": "1.4.4"
-    }
-}
-</code></pre>
+<pre><code>$ wget https://github.com/andrefigueira/Schematic/blob/master/schematic.phar</code></pre>
 
-<p>Then run composer install, or update...</p>
+<pre><code>$ chmod +x schematic.phar</code></pre>
 
-<pre><code>$ composer update
+<pre><code>$ mv schematic.phar /usr/bin/local/schematic</code></pre>
+
+<p>Then Schematic is ready to use!</p>
+
+<pre><code>$ schematic
 </code></pre>
 
         <h3>Authors and Contributors</h3>
