@@ -26,9 +26,12 @@ class SchematicSelfUpdateConsoleApp extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $updater = new SchematicUpdater($output);
-
         $debug = $input->getOption('debug');
+
+        $updater = new SchematicUpdater($output);
+        $updater->debug = $debug;
+
+        $output->writeln('<info>Checking current version...</info>');
 
         if($updater->isUpdaterRunningFromCliPhp() === true && $debug === false)
         {
@@ -42,11 +45,13 @@ class SchematicSelfUpdateConsoleApp extends Command
             if($updater->isCurrentVersionLatest())
             {
 
-                $output->writeln('<info>Your version of Schematic is up to date.</info>');
+                $output->writeln('<info>You already have Schematic version ' . $updater->getLatestVersionChecksum() . '</info>');
 
             }
             else
             {
+
+                $output->writeln('<info>Schematic is out of date, installing latest version from server...</info>');
 
                 $updater->updateSchematic();
 

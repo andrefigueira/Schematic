@@ -8,6 +8,7 @@ use Library\Logger\Log;
 use Library\Migrations\FileApi\Adapters\JsonAdapter;
 use Library\Migrations\FileApi\Adapters\YamlAdapter;
 use Library\Migrations\SchematicMappingImport;
+use Library\Updater\SchematicUpdater;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -46,6 +47,15 @@ class SchematicMappingImportConsoleApp extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+
+        $updater = new SchematicUpdater($output);
+
+        if(!$updater->isCurrentVersionLatest())
+        {
+
+            $output->writeln('<comment>Your version of Schematic is out of date, please run schematic self-update to get the latest version...</comment>');
+
+        }
 
         $directory = $input->getArgument('dir');
         $environment = $input->getArgument('env');

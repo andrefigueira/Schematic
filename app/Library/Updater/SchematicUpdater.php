@@ -1,4 +1,10 @@
 <?php
+/**
+ * This class handles the downloading and updating of Schematic, so now you are able to update globally installed versions
+ * or locally installed phar files directly from the file without having to download it seperatley.
+ *
+ * @author Andre Figueira <andre.figueira@me.com>
+ */
 
 namespace Library\Updater;
 
@@ -8,16 +14,37 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SchematicUpdater
 {
 
+    /** @var string Main homepage of the project where the files and resources live */
     const HOMEPAGE = 'http://andrefigueira.github.io/Schematic/';
 
+    /** @var string The stable binary location of the PHAR file */
     const TRUNK_SCHEMATIC_STABLE_BIN = 'https://github.com/andrefigueira/Schematic/raw/master/schematic.phar';
 
+    /** @var string The temporary file created when downloaded the latest version of composer */
     const TMP_SCHEMATIC = 'tmp_schematic.phar';
 
-    public $installPath;
+    /** @var string The default install path for Schematic when it's installed globally, primarily used for debug */
+    const INSTALL_PATH = '/usr/local/bin/schematic';
 
-    public $progress;
+    /** @var string The real install path determined based on where the script is run from */
+    private $installPath;
 
+    /** @var object The instance of the progressbar class used from symfony */
+    private $progress;
+
+    /** @var string Checksum of the latest bin file */
+    protected $latestVersionChecksum;
+
+    /** @var bool Sets if we are in debug mode or not */
+    public $debug = false;
+
+    /**
+     * We want an instance of the Symfony OutputInterface to print to screen and also we run setSchematicInstallPath
+     * to determine which script run schematic this time to know what to update.
+     *
+     * @param OutputInterface $output
+     * @throws \Exception
+     */
     public function __construct(OutputInterface $output)
     {
 
@@ -27,14 +54,37 @@ class SchematicUpdater
 
     }
 
-    public function getCurrentVersion()
+    /**
+     * Fetches the current version based on the installPath, does an md5 to see the checksum
+     *
+     * @return string
+     */
+    private function getCurrentVersion()
     {
 
-        return APP_VERSION;
+        if($this->debug)
+        {
+
+            $installPath = self::INSTALL_PATH;
+
+        }
+        else
+        {
+
+            $installPath = $this->installPath;
+
+        }
+
+        return md5_file($installPath);
 
     }
 
-    public function getLatestVersion()
+    /**
+     * Fetches the checksum of the latest file on the remote
+     *
+     * @return string
+     */
+    private function getLatestVersion()
     {
 
         $content = trim(file_get_contents(self::HOMEPAGE . '/version'));
@@ -43,13 +93,37 @@ class SchematicUpdater
 
     }
 
-    public function isCurrentVersionLatest()
+    /**
+     * Getter for retreiving the latest versions checksum
+     *
+     * @return string
+     */
+    public function getLatestVersionChecksum()
     {
 
-        return ($this->getCurrentVersion() == $this->getLatestVersion());
+        return $this->latestVersionChecksum;
 
     }
 
+    /**
+     * Checks if the versions match of if there is a difference in the versions to see if we should update
+     *
+     * @return bool
+     */
+    public function isCurrentVersionLatest()
+    {
+
+        $this->latestVersionChecksum = $this->getLatestVersion();
+
+        return ($this->getCurrentVersion() == $this->latestVersionChecksum);
+
+    }
+
+    /**
+     * Checker to see if the script has been run directly as php cli.php as we don't want to update the cli.php as its local
+     *
+     * @return bool
+     */
     public function isUpdaterRunningFromCliPhp()
     {
 
@@ -57,7 +131,12 @@ class SchematicUpdater
 
     }
 
-    public function setSchematicInstallPath()
+    /**
+     * Check if we have the script which was run and set it as the install path, as its what we would like to replace
+     *
+     * @throws \Exception
+     */
+    private function setSchematicInstallPath()
     {
 
         switch(true)
@@ -86,7 +165,11 @@ class SchematicUpdater
 
     }
 
-    public function downloadLatestVersion()
+    /**
+     * Sets up the download of the latest version from the remote, handles the creation of the progress bar also and the moving of
+     * the file to the correct area
+     */
+    private function downloadLatestVersion()
     {
 
         $fileSize = $this->getSize(self::TRUNK_SCHEMATIC_STABLE_BIN);
@@ -114,6 +197,9 @@ class SchematicUpdater
 
     }
 
+    /**
+     * Bootstrap method for downloading the latest version
+     */
     public function updateSchematic()
     {
 
@@ -122,12 +208,12 @@ class SchematicUpdater
     }
 
     /**
-     * This downloads the actual file
+     * This downloads the actual file and progresses the progress bar, finalizes the installation
      *
      * @param $file
      * @param $chunks
      */
-    public function download($file, $chunks)
+    private function download($file, $chunks)
     {
 
         set_time_limit(0);
@@ -157,17 +243,37 @@ class SchematicUpdater
         $this->progress->finish();
 
         $this->output->writeln(PHP_EOL . '<info>Finished downloading</info>');
-        $this->output->writeln(PHP_EOL . '<info>Installing Schematic...</info>');
+        $this->output->writeln('<info>Installing Schematic...</info>');
 
         $this->replaceExistingInstall();
 
 
     }
 
+    /**
+     * Replaces the existing installation of Schematic based on the execute path of where the script was run from
+     *
+     * @throws \Exception
+     */
     private function replaceExistingInstall()
     {
 
-        if(@rename(self::TMP_SCHEMATIC, $this->installPath) === false)
+        if($this->debug)
+        {
+
+            $existingInstallPath = self::INSTALL_PATH;
+
+        }
+        else
+        {
+
+            $existingInstallPath = $this->installPath;
+
+        }
+
+        $checksum = md5_file(self::TMP_SCHEMATIC);
+
+        if(@rename(self::TMP_SCHEMATIC, $existingInstallPath) === false)
         {
 
             throw new \Exception('Unable to replace old version... check permissions');
@@ -176,7 +282,18 @@ class SchematicUpdater
         else
         {
 
-            $this->output->writeln('<info>Successfully installed Schematic</info>');
+            if(chmod($existingInstallPath, 0755))
+            {
+
+                $this->output->writeln('<info>Successfully installed Schematic version ' . $checksum . '</info>');
+
+            }
+            else
+            {
+
+                $this->output->writeln('<info>Successfully installed Schematic version ' . $checksum . ', but failed to set permissions, run chmod ' . self::INSTALL_PATH . ' manually to use it globally</info>');
+
+            }
 
         }
 
@@ -189,7 +306,7 @@ class SchematicUpdater
      * @param $str
      * @return int
      */
-    function chunk($ch, $str)
+    private function chunk($ch, $str)
     {
 
         $this->progress->advance(strlen($str));
@@ -200,6 +317,12 @@ class SchematicUpdater
 
     }
 
+    /**
+     * Appends the downloaded chunks to the file
+     *
+     * @param $chunk
+     * @throws \Exception
+     */
     private function addToFile($chunk)
     {
 
@@ -217,7 +340,7 @@ class SchematicUpdater
         else
         {
 
-            if(@file_put_contents(self::TMP_SCHEMATIC, $chunk, FILE_APPEND | LOCK_EX) === false)
+            if(@file_put_contents(self::TMP_SCHEMATIC, $chunk) === false)
             {
 
                 throw new \Exception('Failed to download file and create it in the local area, please check permissions...');
@@ -235,7 +358,7 @@ class SchematicUpdater
      * @param $start
      * @param $end
      */
-    function getChunk($file, $start, $end)
+    private function getChunk($file, $start, $end)
     {
 
         $ch = curl_init();
@@ -258,7 +381,7 @@ class SchematicUpdater
      * @param $url
      * @return int
      */
-    function getSize($url)
+    private function getSize($url)
     {
 
         $ch = curl_init();
