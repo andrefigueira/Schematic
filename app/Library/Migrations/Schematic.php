@@ -307,7 +307,6 @@ class Schematic extends AbstractSchematic
 
         $updateFieldSql = '';
         $indexesSql = '';
-        $foreignKeysSql = '';
         $previousColumn = '';
         $columnOrdering = '';
         $indexesArray = array();
@@ -389,7 +388,7 @@ MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->
                 if(!$this->dbAdapter->foreignKeyRelationExists($table, $field, $fieldSettings->foreignKey->table, $fieldSettings->foreignKey->field))
                 {
 
-                    $foreignKeysSql .= 'ALTER TABLE `' . $table . '`
+                    $this->foreignKeysSql .= 'ALTER TABLE `' . $table . '`
 ADD CONSTRAINT FOREIGN KEY (' . $field . ')
 REFERENCES ' . $fieldSettings->foreignKey->table . ' (' . $fieldSettings->foreignKey->field . ')
 ON DELETE ' . $fieldSettings->foreignKey->on->delete . '

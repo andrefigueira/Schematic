@@ -164,9 +164,11 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         else
         {
 
+            $dbError = $this->db->error;
+
             $this->db->rollback();
 
-            throw new \Exception('Failed to run multiquery: ' . $this->db->error);
+            throw new \Exception('Failed to run multiquery: ' . $dbError);
 
         }
 
