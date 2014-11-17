@@ -1,6 +1,6 @@
 schematic:
     name: Schematic
-    version: 1.4.1
+    version: 1.4.7
 database:
     general:
         name: schematic
