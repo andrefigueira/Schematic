@@ -13,7 +13,7 @@ define('APP_NAME', '
 /____/\___/_/ /_/\___/_/ /_/ /_/\__,_/\__/_/\___/
 
 Schematic');
-define('APP_VERSION', '1.4.6');
+define('APP_VERSION', '1.4.7');
 
 try
 {
