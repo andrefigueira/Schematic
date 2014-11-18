@@ -14,7 +14,7 @@ define('APP_ASCI', '
 /____/\___/_/ /_/\___/_/ /_/ /_/\__,_/\__/_/\___/
 ');
 define('APP_TITLE', APP_ASCI . APP_NAME);
-define('APP_VERSION', '1.4.7');
+define('APP_VERSION', '1.4.8');
 
 try
 {
