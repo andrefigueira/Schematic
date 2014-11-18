@@ -5,6 +5,7 @@ namespace Library\Cli;
 use Library\Cli\OutputAdapters\SymfonyOutput;
 use Library\Database\Adapters\MysqlAdapter;
 use Library\Logger\Log;
+use Library\Migrations\Configurations;
 use Library\Migrations\Schematic;
 use Library\Migrations\SchematicFileGenerator;
 use Library\Updater\SchematicUpdater;
@@ -23,14 +24,16 @@ class SchematicGeneratorConsoleApp extends Command
         $this
             ->setName('migrations:generate')
             ->setDescription('Generates the database schema files')
-            ->addArgument(
+            ->addOption(
                 'dir',
-                InputArgument::REQUIRED,
+                'd',
+                InputOption::VALUE_REQUIRED,
                 'What is the folder the schema files live in?'
             )
-            ->addArgument(
+            ->addOption(
                 'fileType',
-                InputArgument::REQUIRED,
+                'f',
+                InputOption::VALUE_REQUIRED,
                 'Which type of schema file do you want to make?'
             )
         ;
@@ -38,6 +41,12 @@ class SchematicGeneratorConsoleApp extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+
+        $directory = $input->getOption('dir');
+        $fileType = $input->getOption('fileType');
+
+        //Do some output! and setup our schematic instance!
+        $schematicOutput = new SymfonyOutput($output);
 
         $updater = new SchematicUpdater($output);
         $helper = $this->getHelper('question');
@@ -49,10 +58,51 @@ class SchematicGeneratorConsoleApp extends Command
 
         }
 
-        $directory = $input->getArgument('dir');
-        $fileType = $input->getArgument('fileType');
+        //Check where we are reading our configurations from, the options or the config file
+        $migrationsConfigurations = new Configurations($schematicOutput);
+        $settingFileType = $migrationsConfigurations->fileType;
 
-        $directory = $directory . $fileType . '/';
+        if(!$settingFileType && !$fileType)
+        {
+
+            throw new \Exception('There is no setting file e.g. .schematic.yaml defined, so pass in the file type or create the config file using -ft...');
+
+        }
+
+        if(!isset($migrationsConfigurations->config->directory) && !$directory)
+        {
+
+            throw new \Exception('There is no directory setting in the ' . $migrationsConfigurations::CONFIG_FILE_NAME . ' config file, so path is through as an option using -d...');
+
+        }
+
+        //Set defaults for the options if the config file is set
+        if($directory)
+        {
+
+            $output->writeln('<comment>Using directory (' . $directory . ') passed in command!</comment>');
+
+        }
+        else
+        {
+
+            $directory = $migrationsConfigurations->config->directory;
+
+        }
+
+        if($fileType)
+        {
+
+            $output->writeln('<comment>Using fileType (' . $fileType . ') passed in command!</comment>');
+
+        }
+        else
+        {
+
+            $fileType = $settingFileType;
+
+
+        }
 
         $output->writeln('<info>Generating schema file</info>');
 
