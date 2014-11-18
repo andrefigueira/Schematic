@@ -14,7 +14,7 @@ use Library\Cli\SchematicMappingImportConsoleApp;
 use Library\Cli\SchematicSelfUpdateConsoleApp;
 use Symfony\Component\Console\Application;
 
-$application = new Application(APP_NAME, APP_VERSION);
+$application = new Application(APP_TITLE, APP_VERSION);
 
 /**
  * @package SchematicConsoleApp

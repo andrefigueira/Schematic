@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 
 class SchematicGeneratorConsoleApp extends Command
 {
@@ -28,11 +29,6 @@ class SchematicGeneratorConsoleApp extends Command
                 'What is the folder the schema files live in?'
             )
             ->addArgument(
-                'name',
-                InputArgument::REQUIRED,
-                'What do you want to call the schema file?'
-            )
-            ->addArgument(
                 'fileType',
                 InputArgument::REQUIRED,
                 'Which type of schema file do you want to make?'
@@ -44,6 +40,7 @@ class SchematicGeneratorConsoleApp extends Command
     {
 
         $updater = new SchematicUpdater($output);
+        $helper = $this->getHelper('question');
 
         if(!$updater->isCurrentVersionLatest())
         {
@@ -52,7 +49,6 @@ class SchematicGeneratorConsoleApp extends Command
 
         }
 
-        $name = $input->getArgument('name');
         $directory = $input->getArgument('dir');
         $fileType = $input->getArgument('fileType');
 
@@ -60,11 +56,24 @@ class SchematicGeneratorConsoleApp extends Command
 
         $output->writeln('<info>Generating schema file</info>');
 
+        $question = new Question('Please enter a file name for the schema file: ');
+        $fileName = $helper->ask($input, $output, $question);
+
+        $question = new Question('Please enter a database name: ');
+        $databaseName = $helper->ask($input, $output, $question);
+
+        $question = new Question('Please enter a table name: ');
+        $tableName = $helper->ask($input, $output, $question);
+
+        $output->writeln('Table name: ' . $tableName);
+
         $schematicFileGenerator = new SchematicFileGenerator();
         $schematicFileGenerator
             ->setFileFormatType($fileType)
             ->setDirectory($directory)
-            ->setName($name)
+            ->setName($fileName)
+            ->setDatabaseName($databaseName)
+            ->setTableName($tableName)
             ->run();
 
         $output->writeln('<info>Generated schema file successfully!</info>');
