@@ -1,6 +1,7 @@
 vendor
 vendor/
 vendor/*
+.idea/
 logs
 sql
 composer.lock
