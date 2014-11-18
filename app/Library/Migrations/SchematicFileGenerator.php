@@ -19,8 +19,14 @@ class SchematicFileGenerator
     /** @var string The schema file to be created */
     protected $schemaFile;
 
-    /** @var string the format type to use */
+    /** @var string The format type to use */
     protected $formatType;
+
+    /** @var string The name to use for the database */
+    protected $databaseName;
+
+    /** @var string The name to use for the table */
+    protected $tableName;
 
     /**
      * Setter for the format type
@@ -62,6 +68,32 @@ class SchematicFileGenerator
     {
 
         $this->name = $name;
+
+        return $this;
+
+    }
+
+    /**
+     * @param string $databaseName
+     * @return $this
+     */
+    public function setDatabaseName($databaseName)
+    {
+
+        $this->databaseName = $databaseName;
+
+        return $this;
+
+    }
+
+    /**
+     * @param string $tableName
+     * @return $this
+     */
+    public function setTableName($tableName)
+    {
+
+        $this->tableName = $tableName;
 
         return $this;
 
@@ -128,6 +160,22 @@ class SchematicFileGenerator
     {
 
         $template = $this->fetchTemplate();
+
+        $search = array(
+            '{{ app_title }}',
+            '{{ app_version }}',
+            '{{ database_name }}',
+            '{{ table_name }}'
+        );
+
+        $replace = array(
+            APP_NAME,
+            APP_VERSION,
+            $this->databaseName,
+            $this->tableName
+        );
+
+        $template = str_replace($search, $replace, $template);
 
         $this->schemaFile = $this->directory . $this->name . '.' . $this->formatType;
 

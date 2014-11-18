@@ -1,17 +1,17 @@
 {
     "schematic": {
-        "name": "Schematic",
-        "version": "1.4.7"
+        "name": "{{ app_title }}",
+        "version": "{{ app_version }}"
     },
     "database": {
         "general": {
-            "name": "schematic",
+            "name": "{{ database_name }}",
             "charset": "utf8",
             "collation": "utf8_general_ci",
             "engine": "InnoDB"
         },
         "tables": {
-            "schematic": {
+            "{{ table_name }}": {
                 "fields": {
                     "id": {
                         "type": "int(11)",
