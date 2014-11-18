@@ -56,6 +56,9 @@ class SchematicUpdater
 
     }
 
+    /**
+     * Check if curl is installed throw error if not and exit the program
+     */
     private function isCurlInstalled()
     {
 
