@@ -105,7 +105,7 @@ class Schematic extends AbstractSchematic
                     else
                     {
 
-                        throw new \Exception('Unable to load schema file: ' . $specificSchemaConfFile);
+                        throw new \Exception('Unable to load the schema file: ' . $specificSchemaConfFile);
 
                     }
 
@@ -640,16 +640,54 @@ ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';';
             if(!$fileInfo->isDot() && $fileInfo->getFilename() != 'config')
             {
 
-                if($this->exists())
+                $filePath = $fileInfo->getPath() . '/' . $fileInfo->getFilename();
+
+                if($fileInfo->isDir())
                 {
 
-                    $this->generate();
+                    $subDir = new \DirectoryIterator($filePath);
+
+                    foreach($subDir as $subFileInfo)
+                    {
+
+                        $this->setSchemaFile($fileInfo->getFilename() . '/' . $subFileInfo->getFilename());
+
+                        if(!$subFileInfo->isDot())
+                        {
+
+                            if($this->exists())
+                            {
+
+                                $this->generate();
+
+                            }
+                            else
+                            {
+
+                                throw new \Exception('No schematics exist...');
+
+                            }
+
+                        }
+
+                    }
 
                 }
                 else
                 {
 
-                    throw new \Exception('No schematics exist...');
+                    if($this->exists())
+                    {
+
+                        $this->generate();
+
+                    }
+                    else
+                    {
+
+                        throw new \Exception('No schematics exist...');
+
+                    }
 
                 }
 
