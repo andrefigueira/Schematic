@@ -1,7 +1,7 @@
 {
     "name": "mysql/schematic",
     "description": "A simple MySQL migration management tool in PHP, create and update databases automatically with a config json file without having to use inbuilt ORM functions.",
-    "version": "1.4.6",
+    "version": "1.4.7",
     "keywords": [
         "mysql",
         "database",
@@ -26,7 +26,7 @@
 	    }
     },
     "require": {
-        "php": ">=5.3.0",
+        "php": ">=5.3.2",
         "symfony/console": "v2.5.6",
         "symfony/yaml": "*"
     },
