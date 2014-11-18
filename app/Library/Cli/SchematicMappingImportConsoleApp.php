@@ -5,6 +5,7 @@ namespace Library\Cli;
 use Library\Cli\OutputAdapters\SymfonyOutput;
 use Library\Database\Adapters\MysqlAdapter;
 use Library\Logger\Log;
+use Library\Migrations\Configurations;
 use Library\Migrations\FileApi\Adapters\JsonAdapter;
 use Library\Migrations\FileApi\Adapters\YamlAdapter;
 use Library\Migrations\SchematicMappingImport;
@@ -12,6 +13,7 @@ use Library\Updater\SchematicUpdater;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SchematicMappingImportConsoleApp extends Command
@@ -22,10 +24,17 @@ class SchematicMappingImportConsoleApp extends Command
         $this
             ->setName('migrations:mapping')
             ->setDescription('Generates the database schema based on an existing database')
-            ->addArgument(
+            ->addOption(
                 'dir',
-                InputArgument::REQUIRED,
-                'What is the folder the schema files live in?'
+                'd',
+                InputOption::VALUE_REQUIRED,
+                'Where are the schema files to run?'
+            )
+            ->addOption(
+                'fileType',
+                'f',
+                InputOption::VALUE_REQUIRED,
+                'What filetype are the schema files?'
             )
             ->addArgument(
                 'env',
@@ -37,18 +46,19 @@ class SchematicMappingImportConsoleApp extends Command
                 InputArgument::REQUIRED,
                 'Which database do you want to construct?'
             )
-            ->addArgument(
-                'fileType',
-                InputArgument::REQUIRED,
-                'Which type of schema file do you want to make?'
-            )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
+        $directory = $input->getOption('dir');
+        $fileType = $input->getOption('fileType');
+        $environment = $input->getArgument('env');
+        $dbName = $input->getArgument('db');
+
         $updater = new SchematicUpdater($output);
+        $schematicOutput = new SymfonyOutput($output);
 
         if(!$updater->isCurrentVersionLatest())
         {
@@ -57,12 +67,51 @@ class SchematicMappingImportConsoleApp extends Command
 
         }
 
-        $directory = $input->getArgument('dir');
-        $environment = $input->getArgument('env');
-        $dbName = $input->getArgument('db');
-        $fileType = $input->getArgument('fileType');
+        //Check where we are reading our configurations from, the options or the config file
+        $migrationsConfigurations = new Configurations($schematicOutput);
+        $settingFileType = $migrationsConfigurations->fileType;
 
-        $schematicOutput = new SymfonyOutput($output);
+        if(!$settingFileType && !$fileType)
+        {
+
+            throw new \Exception('There is no setting file e.g. .schematic.yaml defined, so pass in the file type or create the config file using -ft...');
+
+        }
+
+        if(!isset($migrationsConfigurations->config->directory) && !$directory)
+        {
+
+            throw new \Exception('There is no directory setting in the ' . $migrationsConfigurations::CONFIG_FILE_NAME . ' config file, so path is through as an option using -d...');
+
+        }
+
+        //Set defaults for the options if the config file is set
+        if($directory)
+        {
+
+            $output->writeln('<comment>Using directory (' . $directory . ') passed in command!</comment>');
+
+        }
+        else
+        {
+
+            $directory = $migrationsConfigurations->config->directory;
+
+        }
+
+        if($fileType)
+        {
+
+            $output->writeln('<comment>Using fileType (' . $fileType . ') passed in command!</comment>');
+
+        }
+        else
+        {
+
+            $fileType = $settingFileType;
+
+
+        }
 
         $database = 'mysql';
 
@@ -93,8 +142,6 @@ class SchematicMappingImportConsoleApp extends Command
                 throw new \Exception('We can only generate JSON files for now...');
 
         }
-
-        $directory = $directory . $fileType . '/';
 
         $output->writeln('<info>Beginning migrations</info>');
 
