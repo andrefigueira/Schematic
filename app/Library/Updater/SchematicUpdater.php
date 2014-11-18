@@ -50,7 +50,26 @@ class SchematicUpdater
 
         $this->output = $output;
 
+        $this->isCurlInstalled();
+
         $this->setSchematicInstallPath();
+
+    }
+
+    /**
+     * Check if curl is installed throw error if not and exit the program
+     */
+    private function isCurlInstalled()
+    {
+
+        if(!function_exists('curl_version'))
+        {
+
+            $this->output->writeln('<comment>Curl is not installed, run sudo apt-get install php5-curl, then run this again..</comment>');
+
+            exit;
+
+        }
 
     }
 
@@ -75,7 +94,18 @@ class SchematicUpdater
 
         }
 
-        return md5_file($installPath);
+        if(file_exists($installPath))
+        {
+
+            return md5_file($installPath);
+
+        }
+        else
+        {
+
+            return false;
+
+        }
 
     }
 
@@ -275,6 +305,8 @@ class SchematicUpdater
 
         if(@rename(self::TMP_SCHEMATIC, $existingInstallPath) === false)
         {
+
+            unlink(self::TMP_SCHEMATIC);
 
             throw new \Exception('Unable to replace old version... check permissions');
 
