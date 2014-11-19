@@ -630,17 +630,21 @@ ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';';
     public function run()
     {
 
+        $this->output->writeln('<info>Begining migrations...</info>');
+
         $dir = new \DirectoryIterator($this->directory);
 
         foreach($dir as $fileInfo)
         {
 
-            $this->setSchemaFile($fileInfo->getFilename());
+            $fileName = $fileInfo->getFilename();
 
-            if(!$fileInfo->isDot() && $fileInfo->getFilename() != 'config')
+            $this->setSchemaFile($fileName);
+
+            if(!$fileInfo->isDot() && $fileName != 'config' && $fileName != '.DS_Store')
             {
 
-                $filePath = $fileInfo->getPath() . '/' . $fileInfo->getFilename();
+                $filePath = $fileInfo->getPath() . '/' . $fileName;
 
                 if($fileInfo->isDir())
                 {
@@ -650,7 +654,7 @@ ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';';
                     foreach($subDir as $subFileInfo)
                     {
 
-                        $this->setSchemaFile($fileInfo->getFilename() . '/' . $subFileInfo->getFilename());
+                        $this->setSchemaFile($fileName . '/' . $subFileInfo->getFilename());
 
                         if(!$subFileInfo->isDot())
                         {
@@ -698,6 +702,8 @@ ON UPDATE ' . $fieldSettings->foreignKey->on->update . ';';
         $this->applyForeignKeys();
 
         $this->dbAdapter->commit();
+
+        $this->output->writeln('<info>Migrations completed</info>');
 
     }
 

@@ -4,6 +4,7 @@ namespace Library\Cli;
 
 use Library\Cli\OutputAdapters\SymfonyOutput;
 use Library\Database\Adapters\MysqlAdapter;
+use Library\Helpers\SchematicHelper;
 use Library\Logger\Log;
 use Library\Migrations\Configurations;
 use Library\Migrations\Schematic;
@@ -45,69 +46,18 @@ class SchematicGeneratorConsoleApp extends Command
         $directory = $input->getOption('dir');
         $fileType = $input->getOption('fileType');
 
-        //Do some output! and setup our schematic instance!
-        $schematicOutput = new SymfonyOutput($output);
+        $config = SchematicHelper::init($output, array(
+            'fileType' => $input->getOption('fileType'),
+            'directory' => $input->getOption('dir')
+        ));
 
-        $updater = new SchematicUpdater($output);
+        $directory = $config['directory'];
+        $fileType = $config['fileType'];
+        $database = $config['driver'];
+
         $helper = $this->getHelper('question');
 
-        if(!$updater->isCurrentVersionLatest())
-        {
-
-            $output->writeln('<comment>Your version of Schematic is out of date, please run schematic self-update to get the latest version...</comment>');
-
-        }
-
-        //Check where we are reading our configurations from, the options or the config file
-        $migrationsConfigurations = new Configurations($schematicOutput);
-        $settingFileType = $migrationsConfigurations->fileType;
-
-        if(!$settingFileType && !$fileType)
-        {
-
-            throw new \Exception('There is no setting file e.g. .schematic.yaml defined, so pass in the file type or create the config file using -ft...');
-
-        }
-
-        if(!isset($migrationsConfigurations->config->directory) && !$directory)
-        {
-
-            throw new \Exception('There is no directory setting in the ' . $migrationsConfigurations::CONFIG_FILE_NAME . ' config file, so path is through as an option using -d...');
-
-        }
-
-        //Set defaults for the options if the config file is set
-        if($directory)
-        {
-
-            $output->writeln('<comment>Using directory (' . $directory . ') passed in command!</comment>');
-
-        }
-        else
-        {
-
-            $directory = $migrationsConfigurations->config->directory;
-
-        }
-
-        if($fileType)
-        {
-
-            $output->writeln('<comment>Using fileType (' . $fileType . ') passed in command!</comment>');
-
-        }
-        else
-        {
-
-            $fileType = $settingFileType;
-
-
-        }
-
         $output->writeln('<info>Generating schema file</info>');
-
-        $question = new Question('Please enter a file name for the schema file: ');
-        $fileName = $helper->ask($input, $output, $question);
 
         $question = new Question('Please enter a database name: ');
         $databaseName = $helper->ask($input, $output, $question);
@@ -121,13 +71,12 @@ class SchematicGeneratorConsoleApp extends Command
         $schematicFileGenerator
             ->setFileFormatType($fileType)
             ->setDirectory($directory)
-            ->setName($fileName)
+            ->setName($databaseName)
             ->setDatabaseName($databaseName)
             ->setTableName($tableName)
             ->run();
 
-        $output->writeln('<info>Generated schema file successfully!</info>');
-        $output->writeln('<info>' . $schematicFileGenerator->getSchemaFile(). '</info>');
+        $output->writeln('<info>Generated schema file (' . $schematicFileGenerator->getSchemaFile(). ') successfully!</info>');
 
     }
 

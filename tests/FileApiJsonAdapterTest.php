@@ -8,8 +8,7 @@ class FileApiJsonAdapterTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
 
-        $symfonyOutput = new Symfony\Component\Console\Output\ConsoleOutput();
-        $output = new \Library\Cli\OutputAdapters\SymfonyOutput($symfonyOutput);
+        $output = new Symfony\Component\Console\Output\ConsoleOutput();
         $this->adapter = new \Library\Migrations\FileApi\Adapters\JsonAdapter($output);
 
     }

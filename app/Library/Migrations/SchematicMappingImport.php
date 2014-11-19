@@ -21,6 +21,8 @@ class SchematicMappingImport extends AbstractSchematic
             ->setDatabaseVariables($this->dbAdapter->fetchDatabaseVariables())
             ->mapAndGenerateSchema($this->dbAdapter->mapDatabase());
 
+        $this->output->writeln('<info>Mapping of (' . $this->database . ') is complete</info>');
+
     }
 
 }

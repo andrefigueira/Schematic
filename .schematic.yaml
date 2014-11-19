@@ -1,1 +1,2 @@
-directory: /users/andre/Projects/Schematic/schemas/
+driver: mysql
+directory: /Users/andrefigueira/Projects/Schematic/schemas/
