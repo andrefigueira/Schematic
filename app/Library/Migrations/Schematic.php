@@ -5,8 +5,6 @@
  * script it will then run through and make the updates to the database.
  *
  * @author <Andre Figueira> andre.figueira@me.com
- * @package Schematic
- * @version 1.4.8
  *
  */
 
