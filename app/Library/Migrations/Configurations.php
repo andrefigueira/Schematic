@@ -5,7 +5,7 @@
 
 namespace Library\Migrations;
 
-use Library\Cli\OutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Configurations
 {
@@ -30,13 +30,13 @@ class Configurations
      * what the file type is on it's own, and after checks if it can fetch configuration information from the config file
      * if it exists
      *
-     * @param OutputInterface $output
+     * @param OutputInterface $outputInterface
      * @throws \Exception
      */
-    public function __construct(OutputInterface $output)
+    public function __construct(OutputInterface $outputInterface)
     {
 
-        $this->output = $output;
+        $this->output = $outputInterface;
 
         $this->fileType = $this->getConfigFileType();
 

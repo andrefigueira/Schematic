@@ -10,7 +10,7 @@ namespace Library\Migrations\FileApi\Adapters;
 
 use Library\Migrations\FileApi\AbstractFileGenerator;
 use Library\Migrations\FileApi\FileGeneratorInferface;
-use Library\Cli\OutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Parser;
 
@@ -26,10 +26,10 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
     /** @var object The instance of the output interface */
     protected $output;
 
-    public function __construct(OutputInterface $output)
+    public function __construct(OutputInterface $outputInterface)
     {
 
-        $this->output = $output;
+        $this->output = $outputInterface;
 
     }
 

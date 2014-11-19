@@ -4,8 +4,8 @@ namespace Library\Migrations;
 
 use Library\Database\DatabaseInterface;
 use Library\Logger\LogInterface;
-use Library\Cli\OutputInterface;
 use Library\Migrations\FileApi\FileGeneratorInferface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractSchematic
 {
@@ -33,12 +33,12 @@ abstract class AbstractSchematic
      * @param OutputInterface $output
      * @param FileGeneratorInferface $fileGenerator
      */
-    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, OutputInterface $output, FileGeneratorInferface $fileGenerator)
+    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, OutputInterface $outputInterface, FileGeneratorInferface $fileGenerator)
     {
 
         $this->log = $log;
         $this->dbAdapter = $dbAdapter;
-        $this->output = $output;
+        $this->output = $outputInterface;
         $this->fileGenerator = $fileGenerator;
 
         return $this;
