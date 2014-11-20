@@ -25,6 +25,11 @@ class Configurations
     /** @var string The prefix of the default schematic configuration file */
     const CONFIG_FILE_NAME = '.schematic';
 
+    /** @var string The default name for the schema folder */
+    const CONFIG_SCHEMA_FOLDER_NAME = 'schemas';
+
+    const CONFIG_DEFAULT_DRIVER = 'mysql';
+
     /**
      * The construct expects an output interface so it can print to screen it also runs the getConfigFileType to determine
      * what the file type is on it's own, and after checks if it can fetch configuration information from the config file
@@ -53,7 +58,7 @@ class Configurations
     private function getConfigFileType()
     {
 
-        foreach($this->allowedConfigurationFileTypes() as $allowedFileType)
+        foreach(Configurations::allowedConfigurationFileTypes() as $allowedFileType)
         {
 
             $fileToCheckFor = self::CONFIG_FILE_NAME . '.' . $allowedFileType;
@@ -116,7 +121,7 @@ class Configurations
      *
      * @return array
      */
-    private function allowedConfigurationFileTypes()
+    public static function allowedConfigurationFileTypes()
     {
 
         return array(

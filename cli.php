@@ -12,6 +12,7 @@ use Library\Cli\SchematicConsoleApp;
 use Library\Cli\SchematicGeneratorConsoleApp;
 use Library\Cli\SchematicMappingImportConsoleApp;
 use Library\Cli\SchematicSelfUpdateConsoleApp;
+use Library\Cli\SchematicInitConsoleApp;
 use Symfony\Component\Console\Application;
 
 $application = new Application(APP_TITLE, APP_VERSION);
@@ -43,6 +44,13 @@ $application->add(new SchematicMappingImportConsoleApp);
  * Checks to see if there are any updates to Schematic in the trunk and updates to that latest stable version
  */
 $application->add(new SchematicSelfUpdateConsoleApp);
+
+/**
+ * @package SchematicInitConsoleApp
+ *
+ * Installs the default setup for Schematic
+ */
+$application->add(new SchematicInitConsoleApp);
 
 /**
  * Run the app yo
