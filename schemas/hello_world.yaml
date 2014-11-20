@@ -1,6 +1,6 @@
 schematic:
     name: Schematic
-    version: 1.4.8
+    version: 1.4.9
 database:
     general:
         name: schematic
@@ -21,12 +21,11 @@ database:
                     'null': false
                     unsigned: true
                     autoIncrement: false
-                name:
+                full_name:
                     type: varchar(128)
                     'null': false
                     unsigned: false
                     autoIncrement: false
-                    rename: full_name
                 description:
                     type: varchar(256)
                     'null': false
