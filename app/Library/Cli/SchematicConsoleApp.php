@@ -51,7 +51,8 @@ class SchematicConsoleApp extends Command
 
         $config = SchematicHelper::init($output, array(
             'fileType' => $input->getOption('fileType'),
-            'directory' => $input->getOption('dir')
+            'directory' => $input->getOption('dir'),
+            'environment' => $environment
         ));
 
         $directory = $config['directory'];
@@ -71,7 +72,7 @@ class SchematicConsoleApp extends Command
         $schematic
             ->setFileFormatType($fileType)
             ->setDirectory($directory)
-            ->setEnvironmentConfigs($environment)
+            ->setEnvironmentConfigs($config['environmentConfigs'])
             ->run();
 
     }
