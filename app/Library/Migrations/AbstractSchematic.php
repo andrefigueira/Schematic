@@ -25,12 +25,15 @@ abstract class AbstractSchematic
     /** @var string The database to use for the import */
     protected $database;
 
+    /** @var object Object of configurations */
+    protected $config;
+
     /**
      * We're injecting a logger and a database adapter into the Schematic which are interchangeable
      *
      * @param LogInterface $log
      * @param DatabaseInterface $dbAdapter
-     * @param OutputInterface $output
+     * @param OutputInterface $outputInterface
      * @param FileGeneratorInferface $fileGenerator
      */
     public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, OutputInterface $outputInterface, FileGeneratorInferface $fileGenerator)
@@ -69,6 +72,8 @@ abstract class AbstractSchematic
     public function setDirectory($directory)
     {
 
+        if(substr($directory, -1) != '/'){ $directory = $directory . '/';}
+
         $this->directory = $directory;
 
         return $this;
@@ -88,62 +93,19 @@ abstract class AbstractSchematic
 
     }
 
-    /**
-     * Setter and binder of environment configs for the database for which we are managing
-     *
-     * @param $environment
-     * @return $this
-     * @throws \Exception
-     */
-    public function setEnvironmentConfigs($environment)
+    public function setEnvironmentConfigs($environmentConfigs)
     {
 
-        $this->environment = $environment;
+        $this->environmentConfigs = $environmentConfigs;
 
-        $this->bindEnvironmentConfigs();
+        if(isset($this->environmentConfigs->host))
+        {
+
+            $this->setDbAdapterConfigs();
+
+        }
 
         return $this;
-
-    }
-
-    /**
-     * Bind the environment configs to properties
-     *
-     * @throws \Exception
-     */
-    private function bindEnvironmentConfigs()
-    {
-
-        $environmentPath = $this->directory . 'config/';
-        $environmentFile = $environmentPath . $this->environment . '.' . $this->formatType;
-
-        if($environmentFile)
-        {
-
-            $this->environmentConfigs = @file_get_contents($environmentFile);
-
-            if($this->environmentConfigs)
-            {
-
-                $this->environmentConfigs = $this->fileGenerator->convertToObject($this->environmentConfigs);
-
-                $this->setDbAdapterConfigs();
-
-            }
-            else
-            {
-
-                throw new \Exception('Unable to read environment config file, ensure you have created: ' . $environmentFile);
-
-            }
-
-        }
-        else
-        {
-
-            throw new \Exception('Unable to load environment configs file: ' . $environmentFile);
-
-        }
 
     }
 

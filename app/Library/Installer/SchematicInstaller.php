@@ -35,23 +35,14 @@ class SchematicInstaller
 
         return $this->fileAdapter->convertToFormat(array(
             'driver' => Configurations::CONFIG_DEFAULT_DRIVER,
-            'directory' =>  $_SERVER['PWD'] . '/' . Configurations::CONFIG_SCHEMA_FOLDER_NAME
-        ));
-
-    }
-
-    /**
-     * Using the file adapter creates default contents for the environment config file
-     *
-     * @return mixed
-     */
-    private function defaultEnvironmentConfigData()
-    {
-
-        return $this->fileAdapter->convertToFormat(array(
-            'host' => '127.0.0.1',
-            'user' => 'root',
-            'pass' => ''
+            'directory' =>  $_SERVER['PWD'] . '/' . Configurations::CONFIG_SCHEMA_FOLDER_NAME . '/',
+            'environments' => array(
+                'localhost' => array(
+                    'host' => '127.0.0.1',
+                    'user' => 'root',
+                    'pass' => ''
+                )
+            )
         ));
 
     }
@@ -100,49 +91,6 @@ class SchematicInstaller
     }
 
     /**
-     * Creates the environment config file
-     *
-     * @param $dir
-     * @return bool
-     */
-    private function createEnvironmentConfigFile($dir)
-    {
-
-        $configFileName = $dir . '/localhost.' . $this->fileFormatType;
-
-        if(file_exists($configFileName))
-        {
-
-            $this->output->writeln('<fg=red>' . $configFileName . ' already exists!</fg=red>');
-
-            return false;
-
-        }
-        else
-        {
-
-            if(@file_put_contents($configFileName, $this->defaultEnvironmentConfigData()))
-            {
-
-                $this->output->writeln('<info>Created ' . $configFileName . '</info>');
-
-                return true;
-
-            }
-            else
-            {
-
-                $this->output->writeln('<fg=red>' . $configFileName . ' already exists!</fg=red>');
-
-                return false;
-
-            }
-
-        }
-
-    }
-
-    /**
      * Creates the schema folder if it does not exist
      *
      * @return bool
@@ -166,8 +114,6 @@ class SchematicInstaller
 
                 $this->output->writeln('<info>Created ' . Configurations::CONFIG_SCHEMA_FOLDER_NAME . ' folder</info>');
 
-                $this->createSchemaConfigFolder();
-
                 return true;
 
             }
@@ -175,50 +121,6 @@ class SchematicInstaller
             {
 
                 $this->output->writeln('<fg=red>Unable to create schema folder, check permissions!</fg=red>');
-
-                return false;
-
-            }
-
-        }
-
-    }
-
-    /**
-     * Creates the schema config folder if it doesn't exist
-     *
-     * @return bool
-     */
-    private function createSchemaConfigFolder()
-    {
-
-        $dir = Configurations::CONFIG_SCHEMA_FOLDER_NAME . '/config';
-
-        if(is_dir($dir))
-        {
-
-            $this->output->writeln('<fg=red>Schema config folder already exists!</fg=red>');
-
-            return false;
-
-        }
-        else
-        {
-
-            if(@mkdir($dir))
-            {
-
-                $this->output->writeln('<info>Created ' . $dir . ' folder</info>');
-
-                $this->createEnvironmentConfigFile($dir);
-
-                return true;
-
-            }
-            else
-            {
-
-                $this->output->writeln('<fg=red>Unable to create schema config folder, check permissions!</fg=red>');
 
                 return false;
 

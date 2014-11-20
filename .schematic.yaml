@@ -1,2 +1,7 @@
 driver: mysql
-directory: /Users/andrefigueira/Projects/Schematic/schemas/
+directory: /Users/andre/Projects/Schematic/schemas/
+environments:
+    localhost:
+        host: 127.0.0.1
+        user: root
+        pass: ''

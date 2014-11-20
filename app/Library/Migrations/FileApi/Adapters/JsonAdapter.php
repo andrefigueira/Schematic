@@ -51,7 +51,7 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
             if($this->create($fileName, $fileContent))
             {
 
-                $this->output->writeln('<info>Created schema file ' . $fileName . '</info>');
+                $this->output->writeln('<info>Created schema file</info> ' . $fileName);
 
             }
 
