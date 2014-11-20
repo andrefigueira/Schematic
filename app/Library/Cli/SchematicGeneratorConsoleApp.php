@@ -2,7 +2,6 @@
 
 namespace Library\Cli;
 
-use Library\Cli\OutputAdapters\SymfonyOutput;
 use Library\Database\Adapters\MysqlAdapter;
 use Library\Helpers\SchematicHelper;
 use Library\Logger\Log;
@@ -43,9 +42,6 @@ class SchematicGeneratorConsoleApp extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $directory = $input->getOption('dir');
-        $fileType = $input->getOption('fileType');
-
         $config = SchematicHelper::init($output, array(
             'fileType' => $input->getOption('fileType'),
             'directory' => $input->getOption('dir')
@@ -53,7 +49,6 @@ class SchematicGeneratorConsoleApp extends Command
 
         $directory = $config['directory'];
         $fileType = $config['fileType'];
-        $database = $config['driver'];
 
         $helper = $this->getHelper('question');
 

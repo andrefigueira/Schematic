@@ -2,7 +2,6 @@
 
 namespace Library\Cli;
 
-use Library\Cli\OutputAdapters\SymfonyOutput;
 use Library\Database\Adapters\MysqlAdapter;
 use Library\Helpers\SchematicHelper;
 use Library\Logger\Log;
@@ -65,13 +64,16 @@ class SchematicMappingImportConsoleApp extends Command
         $fileType = $config['fileType'];
         $database = $config['driver'];
 
+        $databaseAdapterClass = '\Library\Database\Adapters\\' . ucfirst($database) . 'Adapter';
+        $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
+
         $output->writeln('<info>Beginning migrations</info>');
 
         $schematic = new SchematicMappingImport(
             new Log(),
-            SchematicHelper::getDatabaseAdapter($database),
+            new $databaseAdapterClass(),
             $output,
-            SchematicHelper::getFileTypeGeneratorAdapter($fileType, $output)
+            new $fileAdapterClass($output)
         );
 
         $schematic
