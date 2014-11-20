@@ -17,7 +17,8 @@ class SchematicHelperTest extends PHPUnit_Framework_TestCase
     {
 
         $this->assertTrue(is_array(\Library\Helpers\SchematicHelper::init($this->consoleOutput, array(
-            'fileType' => 'yaml'
+            'fileType' => 'yaml',
+            'environment' => 'localhost'
         ))));
 
     }

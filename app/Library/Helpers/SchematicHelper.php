@@ -27,6 +27,7 @@ class SchematicHelper
 
         if(!isset($params['fileType'])){ $params['fileType'] = false;}
         if(!isset($params['directory'])){ $params['directory'] = false;}
+        if(!isset($params['environment'])){ $params['environment'] = false;}
 
         $updater = new SchematicUpdater($outputInterface);
 
@@ -76,6 +77,26 @@ class SchematicHelper
 
         }
 
+        if(isset($migrationsConfigurations->config->environments->{$params['environment']}))
+        {
+
+            $environmentConfigs = $migrationsConfigurations->config->environments->{$params['environment']};
+
+        }
+        else
+        {
+
+            $environmentConfigs = null;
+
+            if($params['environment'] != null)
+            {
+
+                throw new \Exception('Environment ' . $params['environment'] . ' does not exist...');
+
+            }
+
+        }
+
         if($params['fileType'])
         {
 
@@ -94,7 +115,8 @@ class SchematicHelper
         $results = array(
             'fileType' => $fileType,
             'directory' => $directory,
-            'driver' => $migrationsConfigurations->config->driver
+            'driver' => $migrationsConfigurations->config->driver,
+            'environmentConfigs' => $environmentConfigs
         );
 
         return $results;

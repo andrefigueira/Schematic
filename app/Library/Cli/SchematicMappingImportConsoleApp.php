@@ -57,7 +57,8 @@ class SchematicMappingImportConsoleApp extends Command
 
         $config = SchematicHelper::init($output, array(
             'fileType' => $input->getOption('fileType'),
-            'directory' => $input->getOption('dir')
+            'directory' => $input->getOption('dir'),
+            'environment' => $environment
         ));
 
         $directory = $config['directory'];
@@ -67,7 +68,7 @@ class SchematicMappingImportConsoleApp extends Command
         $databaseAdapterClass = '\Library\Database\Adapters\\' . ucfirst($database) . 'Adapter';
         $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
 
-        $output->writeln('<info>Beginning migrations</info>');
+        $output->writeln('<info>Beginning database mapping</info>');
 
         $schematic = new SchematicMappingImport(
             new Log(),
@@ -80,7 +81,7 @@ class SchematicMappingImportConsoleApp extends Command
             ->setFileFormatType($fileType)
             ->setDirectory($directory)
             ->setDatabase($dbName)
-            ->setEnvironmentConfigs($environment)
+            ->setEnvironmentConfigs($config['environmentConfigs'])
             ->run()
         ;
 

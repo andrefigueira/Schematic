@@ -44,7 +44,8 @@ class SchematicGeneratorConsoleApp extends Command
 
         $config = SchematicHelper::init($output, array(
             'fileType' => $input->getOption('fileType'),
-            'directory' => $input->getOption('dir')
+            'directory' => $input->getOption('dir'),
+            'environment' => null
         ));
 
         $directory = $config['directory'];
@@ -54,13 +55,13 @@ class SchematicGeneratorConsoleApp extends Command
 
         $output->writeln('<info>Generating schema file</info>');
 
-        $question = new Question('Please enter a database name: ');
+        $question = new Question('<fg=blue>Please enter a database name:</fg=blue> ');
         $databaseName = $helper->ask($input, $output, $question);
 
-        $question = new Question('Please enter a table name: ');
+        $question = new Question('<fg=blue>Please enter a table name:</fg=blue> ');
         $tableName = $helper->ask($input, $output, $question);
 
-        $output->writeln('Table name: ' . $tableName);
+        $output->writeln('<info>Table name:</info> ' . $tableName);
 
         $schematicFileGenerator = new SchematicFileGenerator();
         $schematicFileGenerator
@@ -71,7 +72,7 @@ class SchematicGeneratorConsoleApp extends Command
             ->setTableName($tableName)
             ->run();
 
-        $output->writeln('<info>Generated schema file (' . $schematicFileGenerator->getSchemaFile(). ') successfully!</info>');
+        $output->writeln('<info>Generated schema file (</info>' . $schematicFileGenerator->getSchemaFile(). '<info>) successfully!</info>');
 
     }
 
