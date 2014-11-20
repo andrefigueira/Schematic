@@ -329,7 +329,7 @@ class Schematic extends AbstractSchematic
 
                         $this->output->writeln('Modifying column: ' . $field);
 
-                        if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
 
                         $updateFieldSql .= '
 MODIFY COLUMN `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
@@ -344,7 +344,7 @@ MODIFY COLUMN `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . 
 
                         $this->output->writeln('Changing column: ' . $field);
 
-                        if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
 
                         $updateFieldSql .= '
 CHANGE COLUMN `' . $field . '` `' . $fieldSettings->rename . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
@@ -359,7 +359,7 @@ CHANGE COLUMN `' . $field . '` `' . $fieldSettings->rename . '` ' . $fieldSettin
 
                     $this->output->writeln('Modifying column: ' . $field);
 
-                    if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+                    if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
 
                     $updateFieldSql .= '
 MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
@@ -374,7 +374,7 @@ MODIFY COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->
 
                 $this->output->writeln('Adding column: ' . $field);
 
-                if($previousColumn != ''){ $columnOrdering = ' AFTER ' . $previousColumn;}
+                if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
 
                 $updateFieldSql .= 'ADD COLUMN `' . $field . '` ' . $fieldSettings->type . ' ' . $fieldSettings->unsigned . ' ' . $fieldSettings->null . ' ' . $fieldSettings->autoIncrement . $columnOrdering . ',';
 
