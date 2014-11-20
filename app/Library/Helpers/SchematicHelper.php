@@ -79,6 +79,8 @@ class SchematicHelper
         if($params['fileType'])
         {
 
+            $fileType = $params['fileType'];
+
             $outputInterface->writeln('<comment>Using fileType (' . $params['fileType'] . ') passed in command!</comment>');
 
         }
@@ -96,91 +98,6 @@ class SchematicHelper
         );
 
         return $results;
-
-    }
-
-    /**
-     * Gets an instace of the database adapter
-     *
-     * @param $driver
-     * @throws \Exception
-     */
-    public static function getDatabaseAdapter($driver)
-    {
-
-        if(in_array($driver, self::validDatabaseDrivers()))
-        {
-
-            $adapterClass = '\Library\Database\Adapters\\' . ucfirst($driver) . 'Adapter';
-
-            $instance = new $adapterClass();
-
-            return $instance;
-
-        }
-        else
-        {
-
-            throw new \Exception($driver . ' is not a valid database driver...');
-
-        }
-
-    }
-
-    /**
-     * Gets an instance of the file adapter
-     *
-     * @param $fileType
-     * @throws \Exception
-     */
-    public static function getFileTypeGeneratorAdapter($fileType, $output)
-    {
-
-        if(in_array($fileType, self::validFileTypes()))
-        {
-
-            $adapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
-
-            $instance = new $adapterClass($output);
-
-            return $instance;
-
-        }
-        else
-        {
-
-            throw new \Exception($fileType . ' is not a valid database driver...');
-
-        }
-
-    }
-
-    /**
-     * Returns an array of valid database drivers
-     *
-     * @return array
-     */
-    public static function validDatabaseDrivers()
-    {
-
-        return array(
-            'mysql'
-        );
-
-    }
-
-    /**
-     * Returns an array of valid file types
-     *
-     * @return array
-     */
-    public static function validFileTypes()
-    {
-
-        return array(
-            'yaml',
-            'json'
-        );
 
     }
 
