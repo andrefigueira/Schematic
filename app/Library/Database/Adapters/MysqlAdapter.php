@@ -255,6 +255,7 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         SELECT table_name AS tables
         FROM information_schema.tables
         WHERE table_schema = DATABASE()
+        AND table_type != "VIEW"
         ');
 
         if($result)
