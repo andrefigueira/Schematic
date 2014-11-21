@@ -69,7 +69,9 @@ abstract class AbstractFileGenerator
     public function create($name, $data)
     {
 
-        $newFileName = $this->directory . $name;
+        $this->createDatabaseFolder();
+
+        $newFileName = $this->directory . $this->dbName . '/' . $name;
 
         if(@file_put_contents($newFileName, $data))
         {
@@ -84,6 +86,30 @@ abstract class AbstractFileGenerator
 
         }
 
+    }
+
+    public function createDatabaseFolder()
+    {
+
+        $dir = $this->directory . $this->dbName;
+
+        if(!is_dir($dir))
+        {
+
+            if(@mkdir($dir))
+            {
+
+                return true;
+
+            }
+            else
+            {
+
+                throw new \Exception('Unable to create database folder in schemas folder, check permissions...');
+
+            }
+
+        }
 
     }
 

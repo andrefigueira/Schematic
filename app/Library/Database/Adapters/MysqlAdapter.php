@@ -21,11 +21,29 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
     public function connect()
     {
 
-        $this->db = new \mysqli($this->host, $this->username, $this->password);
+        mysqli_report(MYSQLI_REPORT_STRICT);
 
-        $this->db->autocommit(false);
+        try
+        {
 
-        if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
+            $this->db = new \mysqli($this->host, $this->username, $this->password);
+
+            $this->db->autocommit(false);
+
+            if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
+
+        }
+        catch(\Exception $e)
+        {
+
+            echo '---------------------' . PHP_EOL;
+            echo $e->getMessage() . PHP_EOL;
+            echo '---------------------' . PHP_EOL;
+            echo 'Terminating migrations...' . PHP_EOL;
+
+            exit;
+
+        }
 
     }
 
