@@ -313,6 +313,7 @@ class Schematic extends AbstractSchematic
         foreach($settings->fields as $field => $fieldSettings)
         {
 
+            if(empty($fieldSettings)){ throw new \Exception('Invalid Operation! You have no properties on your field (' . $field . ')!');}
             if(isset($fieldSettings->index) == false){ $fieldSettings->index = '';}
             if(isset($fieldSettings->autoIncrement) && $fieldSettings->autoIncrement){ $fieldSettings->autoIncrement = 'AUTO_INCREMENT';}else{ $fieldSettings->autoIncrement = '';}
             if(isset($fieldSettings->null) && $fieldSettings->null){ $fieldSettings->null = 'NULL';}else{ $fieldSettings->null = 'NOT NULL';}
