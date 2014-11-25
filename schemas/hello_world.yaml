@@ -21,11 +21,15 @@ database:
                     'null': false
                     unsigned: true
                     autoIncrement: false
+                test:
+                    type: int(11)
+                    index: 'INDEX'
                 full_name:
                     type: varchar(128)
                     'null': false
                     unsigned: false
                     autoIncrement: false
+                    index: 'INDEX'
                 description:
                     type: varchar(256)
                     'null': false

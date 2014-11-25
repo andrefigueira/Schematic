@@ -18,21 +18,34 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
     /** @var resource The database resource */
     protected $db;
 
+    protected $table;
+
+    protected $settings;
+
+    protected $foreignKeysSql;
+
+    protected $schema;
+
+    public function setSchema($schema)
+    {
+
+        $this->schema = $schema;
+
+    }
+
     public function connect()
     {
 
         $this->db = new \mysqli($this->host, $this->username, $this->password);
 
-        $this->db->autocommit(false);
-
         if($this->db->connect_errno){ throw new \Exception($this->db->connect_error);}
 
     }
 
-    public function createDatabase($name)
+    public function createDatabase()
     {
 
-        if($name == '')
+        if($this->dbName === '')
         {
 
             throw new \Exception('Database name cannot be empty');
@@ -41,7 +54,7 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         else
         {
 
-            $result = $this->db->query('CREATE DATABASE IF NOT EXISTS `' . $name . '`');
+            $result = $this->db->query('CREATE DATABASE IF NOT EXISTS `' . $this->dbName . '`');
 
             return $result;
 
@@ -78,12 +91,12 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
 
     }
 
-    public function tableExists($name)
+    public function tableExists()
     {
 
         $this->selectDb();
 
-        $result = $this->db->query('SHOW TABLES LIKE "' . $name . '"');
+        $result = $this->db->query('SHOW TABLES LIKE "' . $this->table . '"');
 
         if($result)
         {
@@ -100,7 +113,7 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
 
     }
 
-    public function fieldExists($table, $field)
+    public function fieldExists($field)
     {
 
         $result = $this->db->query('
@@ -108,7 +121,7 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         FROM information_schema.COLUMNS
         WHERE
         TABLE_SCHEMA = "' . $this->dbName . '"
-        AND TABLE_NAME = "' . $table . '"
+        AND TABLE_NAME = "' . $this->table . '"
         AND COLUMN_NAME = "' . $field . '"
         LIMIT 1
         ');
@@ -116,7 +129,35 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         if($result)
         {
 
-            return (bool)$result->num_rows;
+            return (bool) $result->num_rows;
+
+        }
+        else
+        {
+
+            throw new \Exception('Failure in checking if column exists: '. $this->db->error);
+
+        }
+
+    }
+
+    public function indexExists($field)
+    {
+
+        $result = $this->db->query('
+        SELECT *
+        FROM information_schema.COLUMNS
+        WHERE
+        TABLE_SCHEMA = "' . $this->dbName . '"
+        AND TABLE_NAME = "' . $this->table . '"
+        AND COLUMN_NAME = "' . $field . '"
+        LIMIT 1
+        ');
+
+        if($result)
+        {
+
+            return (bool) $result->num_rows;
 
         }
         else
@@ -142,8 +183,6 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         else
         {
 
-            $this->db->rollback();
-
             throw new \Exception('Failed to run query: ' . $query . ' : ' . $this->db->error);
 
         }
@@ -165,8 +204,6 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         {
 
             $dbError = $this->db->error;
-
-            $this->db->rollback();
 
             throw new \Exception('Failed to run multiquery: ' . $dbError);
 
@@ -203,19 +240,12 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
 
     }
 
-    public function commit()
-    {
-
-        $this->db->commit();
-
-    }
-
     public function mapDatabase()
     {
 
         $this->selectDb();
 
-         return $this->fetchTables();
+        return $this->fetchTables();
 
     }
 
@@ -406,6 +436,402 @@ class MysqlAdapter extends AbstractDatabaseAdapter implements DatabaseInterface
         {
 
             throw new \Exception('Unable to fetch field constraints actions: ' . $this->db->error);
+
+        }
+
+    }
+
+    public function migrateTable($table, $settings)
+    {
+
+        $this->table = $table;
+        $this->settings = $settings;
+
+        if($this->tableExists())
+        {
+
+            $result = $this->updateTable();
+
+        }
+        else
+        {
+
+            $result = $this->createTable();
+
+        }
+
+        return $result;
+
+    }
+
+    public function createTable()
+    {
+
+        $query = $this->generateCreateTableSql();
+
+        $result = $this->query($query);
+
+        return $result;
+
+    }
+
+    public function normalizeFieldSettings($settings)
+    {
+
+
+        if(isset($settings->index) == false)
+        {
+
+            $settingsIndex = '';
+
+        }
+        else
+        {
+
+            $settingsIndex = $settings->index;
+
+        }
+
+        if(isset($settings->autoIncrement) && $settings->autoIncrement)
+        {
+
+            $settingsAutoIncrement = 'AUTO_INCREMENT';
+
+        }
+        else
+        {
+
+            $settingsAutoIncrement = '';
+
+        }
+
+        if(isset($settings->null) && $settings->null)
+        {
+
+            $settingsNull = 'NULL';
+
+        }
+        else
+        {
+
+            $settingsNull = 'NOT NULL';
+
+        }
+
+        if(isset($settings->unsigned) && $settings->unsigned)
+        {
+
+            $settingsUnsigned = 'unsigned';
+
+        }
+        else
+        {
+
+            $settingsUnsigned = '';
+
+        }
+
+        $settings->index = $settingsIndex;
+        $settings->autoIncrement = $settingsAutoIncrement;
+        $settings->null = $settingsNull;
+        $settings->unsigned = $settingsUnsigned;
+
+        return $settings;
+
+    }
+
+    public function generateForeignKeysSql($field, $settings)
+    {
+
+        return '
+        ALTER TABLE ' . $this->table . '
+        ADD CONSTRAINT FOREIGN KEY (' . $field . ')
+        REFERENCES ' . $settings->foreignKey->table . ' (' . $settings->foreignKey->field . ')
+        ON DELETE ' . $settings->foreignKey->on->delete . '
+        ON UPDATE ' . $settings->foreignKey->on->update . ';
+        ';
+
+    }
+
+    public function generateIndexesSql($type, $indexesArray)
+    {
+
+        $indexesSql = '';
+        $prefix = '';
+
+        $primaryKeys = array();
+        $uniqueKeys = array();
+        $indexKeys = array();
+
+        foreach($indexesArray as $indexType => $indexes)
+        {
+
+            switch($indexType)
+            {
+
+                case 'PRIMARY_KEY':
+                    foreach($indexes as $index){ array_push($primaryKeys, $index['field']);}
+                    break;
+
+                case 'UNIQUE_KEY':
+                    foreach($indexes as $index){ array_push($uniqueKeys, $index['field']);}
+                    break;
+
+                default:
+                    foreach($indexes as $index){ array_push($indexKeys, $index['field']);}
+
+
+            }
+
+        }
+
+        if($type == 'update'){ $prefix = 'ADD ';}
+
+        if(count($primaryKeys) > 0){ $indexesSql .= ', ' . $prefix . ' PRIMARY KEY (' . implode(', ', $primaryKeys)  . ')';}
+        if(count($uniqueKeys) > 0){ $indexesSql .= ',' . $prefix . ' UNIQUE KEY (' . implode(', ', $uniqueKeys)  . ')';}
+        if(count($indexKeys) > 0){ $indexesSql .= ',' . $prefix . ' INDEX (' . implode(', ', $indexKeys)  . ')';}
+
+        return $indexesSql;
+
+    }
+
+    public function generateCreateTableSql()
+    {
+
+        $addFieldSql = '';
+        $delimeter = '';
+        $i = 1;
+
+        foreach($this->settings->fields as $field => $settings)
+        {
+
+            $settings = $this->normalizeFieldSettings($settings);
+
+            if(isset($this->foreignKey)){ $this->foreignKeysSql .= $this->generateForeignKeysSql($field, $settings);}
+
+            if(isset($settings->index) && $settings->index != '')
+            {
+
+                $fieldKey = str_replace(' ', '_', $settings->index);
+
+                $indexesArray[$fieldKey][] = array(
+                    'type' => $settings->index,
+                    'field' => $field
+                );
+
+            }
+
+            if($i != 1){ $delimeter = ',';}
+
+            $addFieldSql .= $delimeter . '
+            `' . $field . '` ' . $settings->type . ' ' . $settings->unsigned . ' ' . $settings->null . ' ' . $settings->autoIncrement;
+
+            $i++;
+
+        }
+
+        $indexesSql = $this->generateIndexesSql('create', $indexesArray);
+
+        $query = '
+        CREATE TABLE IF NOT EXISTS  ' . $this->table . ' (
+        ' . $addFieldSql . '
+        ' . $indexesSql . '
+        ) ENGINE=' . $this->schema->database->general->engine . ' DEFAULT CHARSET=' . $this->schema->database->general->charset . ' COLLATE=' . $this->schema->database->general->collation . ';
+        ';
+
+        return $query;
+
+    }
+
+    public function generateUpdateTableSql()
+    {
+
+        $updateFieldSql = '';
+        $previousColumn = '';
+        $columnOrdering = '';
+        $delimeter = '';
+        $i = 1;
+
+        foreach($this->settings->fields as $field => $settings)
+        {
+
+            if($i != 1){ $delimeter = ',';}
+
+            $settings = $this->normalizeFieldSettings($settings);
+
+            if($this->fieldExists($field) || (isset($settings->rename) && $this->dbAdapter->fieldExists($settings->rename)))
+            {
+
+                if(isset($settings->rename))
+                {
+
+                    if($this->fieldExists($settings->rename))
+                    {
+
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
+
+                        $updateFieldSql .= $delimeter . '
+                        MODIFY COLUMN `' . $settings->rename . '` ' . $settings->type . ' ' . $settings->unsigned . ' ' . $settings->null . ' ' . $settings->autoIncrement . $columnOrdering;
+
+                        $previousColumn = $settings->rename;
+
+                    }
+                    else
+                    {
+
+                        if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
+
+                        $updateFieldSql .= $delimeter . '
+                        CHANGE COLUMN `' . $field . '` `' . $settings->rename . '` ' . $settings->type . ' ' . $settings->unsigned . ' ' . $settings->null . ' ' . $settings->autoIncrement . $columnOrdering;
+
+                        $previousColumn = $settings->rename;
+
+                    }
+
+                }
+                else
+                {
+
+                    if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
+
+                    $updateFieldSql .= $delimeter  . '
+                    MODIFY COLUMN `' . $field . '` ' . $settings->type . ' ' . $settings->unsigned . ' ' . $settings->null . ' ' . $settings->autoIncrement . $columnOrdering;
+
+                    $previousColumn = $field;
+
+                }
+
+            }
+            else
+            {
+
+                if($previousColumn != ''){ $columnOrdering = ' AFTER `' . $previousColumn . '`';}
+
+                $updateFieldSql .= $delimeter . 'ADD COLUMN `' . $field . '` ' . $settings->type . ' ' . $settings->unsigned . ' ' . $settings->null . ' ' . $settings->autoIncrement . $columnOrdering;
+
+            }
+
+            if(isset($this->foreignKey))
+            {
+
+                if(!$this->foreignKeyRelationExists($this->table, $field, $settings->foreignKey->table, $settings->foreignKey->field))
+                {
+
+                    $this->foreignKeysSql .= $this->generateForeignKeysSql($field, $settings);
+
+                }
+
+            }
+
+            if(isset($settings->index) && $settings->index != '')
+            {
+
+                $fieldKey = str_replace(' ', '_', $settings->index);
+
+                $indexesArray[$fieldKey][] = array(
+                    'type' => $settings->index,
+                    'field' => $field
+                );
+
+            }
+
+            $i++;
+
+        }
+
+        $indexesSql = $this->generateIndexesSql('update', $indexesArray);
+        $indexesSql = '';
+
+        $query = '
+        ALTER TABLE `' . $this->table . '`
+        ' . $updateFieldSql . '
+        ' . $indexesSql . ';';
+
+        return $query;
+
+    }
+
+    public function updateTable()
+    {
+
+        $this->deleteNonSchemedFields();
+
+        $query = $this->generateUpdateTableSql();
+
+        $result = $this->query($query);
+
+        return $result;
+
+    }
+
+    public function deleteNonSchemedFields()
+    {
+
+        $deleteSql = '';
+        $tableFields = $this->showFields($this->table);
+        $newFields = array();
+        $unschemedFields = array();
+
+        foreach($this->settings->fields as $field => $settings)
+        {
+
+            if(isset($settings->rename))
+            {
+
+                array_push($newFields, $settings->rename);
+
+            }
+
+            array_push($newFields, $field);
+
+        }
+
+        foreach($tableFields as $field)
+        {
+
+            if(!in_array($field, $newFields))
+            {
+
+                $deleteSql .= 'ALTER TABLE ' . $this->table . ' DROP ' .$field . ';';
+
+                array_push($unschemedFields, $field);
+
+            }
+
+        }
+
+        if($deleteSql != '')
+        {
+
+            return $this->multiQuery($deleteSql);
+
+        }
+
+    }
+
+    public function applyForeignKeys()
+    {
+
+        if($this->foreignKeysSql != '')
+        {
+
+            if($this->multiQuery($this->foreignKeysSql))
+            {
+
+
+            }
+            else
+            {
+
+
+
+            }
+
+        }
+        else
+        {
+
+
 
         }
 

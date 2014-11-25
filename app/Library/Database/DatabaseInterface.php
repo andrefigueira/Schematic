@@ -45,27 +45,24 @@ interface DatabaseInterface
     /**
      * Should create a new database
      *
-     * @param $name
      * @return mixed
      */
-    public function createDatabase($name);
+    public function createDatabase();
 
     /**
      * Should check if a table exists on the database
      *
-     * @param $name
      * @return mixed
      */
-    public function tableExists($name);
+    public function tableExists();
 
     /**
      * Should check if a field exists in a table on the database
      *
-     * @param $table
      * @param $name
      * @return mixed
      */
-    public function fieldExists($table, $name);
+    public function fieldExists($name);
 
     /**
      * Should be able to run multiple queries at once
