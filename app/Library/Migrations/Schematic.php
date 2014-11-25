@@ -40,10 +40,6 @@ class Schematic extends AbstractSchematic
     /** @var DatabaseInterface The Database adapter currently in use */
     protected $dbAdapter;
 
-    protected $foreignKeysSql;
-
-    protected $indexesArray;
-
     /**
      * Set the schema file to be used currently
      *
