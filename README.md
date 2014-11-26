@@ -21,19 +21,19 @@ A database migrations tool, allows for easy database maintenance in a way that i
 
 Download the PHAR file:
 
-    $ wget https://github.com/andrefigueira/Schematic/blob/master/schematic.phar
+    wget https://github.com/andrefigueira/Schematic/raw/master/schematic.phar
 
 Make the PHAR package executable
 
-    $ chmod +x schematic.phar
+    chmod +x schematic.phar
     
 Move it to the user bin folder
     
-    $ mv schematic.phar /usr/bin/local/schematic
+    mv schematic.phar /usr/local/bin/schematic
     
 Then use Schematic
 
-    $ schematic
+    schematic
     
 Schematic will now be available globally for you!
 
@@ -101,6 +101,8 @@ will stop running and throw and exception.
 Note that currently foreign keys are only added, but not removed, If created a new database with constraints, you must run the update twice to add the constraints.
 
 ##### Usage:
+
+- [Usage tutorial](https://www.youtube.com/watch?v=Y4hckSfzf4U)
 
 `schematic  [options] command [arguments]`
 
