@@ -4,6 +4,7 @@ namespace Library\Database\Adapters\Mysql;
 
 use Library\Database\Adapters\Interfaces\AdapterInterface;
 use Library\Database\Adapters\Interfaces\DatabaseInterface;
+use Library\Helpers\SchematicHelper;
 
 class Database implements DatabaseInterface
 {

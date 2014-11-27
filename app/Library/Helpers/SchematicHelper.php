@@ -9,6 +9,7 @@ namespace Library\Helpers;
 
 use Library\Migrations\Configurations;
 use Library\Updater\SchematicUpdater;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SchematicHelper
@@ -129,6 +130,14 @@ class SchematicHelper
         $func = create_function('$c', 'return strtoupper($c[1]);');
 
         return preg_replace_callback('/_([a-z])/', $func, $string);
+
+    }
+
+    public static function writeln($messages, $type = ConsoleOutput::OUTPUT_NORMAL)
+    {
+
+        $output = new ConsoleOutput();
+        $output->writeln($messages, $type);
 
     }
 

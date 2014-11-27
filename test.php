@@ -46,17 +46,11 @@ $database
 try
 {
 
-    echo 'starting' . PHP_EOL;
-
     if($database->exists())
     {
 
-        echo 'db exists' . PHP_EOL;
-
         if($database->modified())
         {
-
-            echo 'db modified' . PHP_EOL;
 
             $database->update();
 
@@ -66,56 +60,38 @@ try
     else
     {
 
-        echo 'db does not exist' . PHP_EOL;
-
         $database->create();
 
     }
 
     $messages = array();
 
-    echo 'checking tables' . PHP_EOL;
-
     foreach($schema->database->tables as $table => $fields)
     {
-
-        echo 'processing table ' . $table . PHP_EOL;
 
         $table = $database->getTable($table);
 
         if($table->exists())
         {
 
-            echo 'table exists' . PHP_EOL;
-
         }
         else
         {
-
-            echo 'table does not exist' . PHP_EOL;
 
             $table->create();
 
         }
 
-        echo 'processing fields' . PHP_EOL;
-
         foreach($fields->fields as $name => $properties)
         {
-
-            echo 'processing field ' . $name . PHP_EOL;
 
             $field = $table->getField($name, $properties);
 
             if($field->exists())
             {
 
-                echo 'field exists' . PHP_EOL;
-
                 if($field->modified() === true)
                 {
-
-                    echo 'field modified' . PHP_EOL;
 
                     $field->update();
 
@@ -124,8 +100,6 @@ try
             }
             else
             {
-
-                echo 'field does not exist' . PHP_EOL;
 
                 $field->create();
 
@@ -139,6 +113,6 @@ try
 catch(Exception $e)
 {
 
-    echo $e->getMessage() . PHP_EOL;
+    echo $e->getMessage();
 
 }

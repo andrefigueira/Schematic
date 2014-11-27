@@ -9,6 +9,7 @@ use Library\Migrations\Configurations;
 use Library\Migrations\FileApi\Adapters\JsonAdapter;
 use Library\Migrations\FileApi\Adapters\YamlAdapter;
 use Library\Migrations\Schematic;
+use Library\Migrations\SchematicExecute;
 use Library\Updater\SchematicUpdater;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -59,13 +60,10 @@ class SchematicExecuteConsoleApp extends Command
         $fileType = $config['fileType'];
         $database = $config['driver'];
 
-        $databaseAdapterClass = '\Library\Database\Adapters\\' . ucfirst($database) . 'Adapter';
         $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
 
         $schematic = new SchematicExecute(
             new Log(),
-            new $databaseAdapterClass(),
-            $output,
             new $fileAdapterClass($output)
         );
 

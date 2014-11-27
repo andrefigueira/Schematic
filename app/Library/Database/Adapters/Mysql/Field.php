@@ -4,6 +4,7 @@ namespace Library\Database\Adapters\Mysql;
 
 use Library\Database\Adapters\Interfaces\AdapterInterface;
 use Library\Database\Adapters\Interfaces\FieldInterface;
+use Library\Helpers\SchematicHelper;
 
 class Field implements FieldInterface
 {
@@ -248,6 +249,13 @@ class Field implements FieldInterface
         else
         {
 
+            if(isset($this->properties->index) && $this->indexExists() === false)
+            {
+
+                $this->createIndex($this->properties->index);
+
+            }
+
             $sql = 'ALTER TABLE ' . $this->tableName . ' MODIFY COLUMN ' . $this->name . ' ' . $this->properties->type . ' ' . (isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '') . ';';
 
         }
@@ -257,7 +265,7 @@ class Field implements FieldInterface
         if($query)
         {
 
-            if(isset($this->properties->index))
+            if(isset($this->properties->index) && $this->indexExists() === false)
             {
 
                 $this->createIndex($this->properties->index);

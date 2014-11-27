@@ -26,6 +26,45 @@ class Adapter implements AdapterInterface
 
     }
 
+    /**
+     * @param string $host
+     * @return $this
+     */
+    public function setHost($host)
+    {
+
+        $this->host = $host;
+
+        return $this;
+
+    }
+
+    /**
+     * @param string $pass
+     * @return $this
+     */
+    public function setPass($pass)
+    {
+
+        $this->pass = $pass;
+
+        return $this;
+
+    }
+
+    /**
+     * @param string $user
+     * @return $this
+     */
+    public function setUser($user)
+    {
+
+        $this->user = $user;
+
+        return $this;
+
+    }
+
     public function setDatabaseName($databaseName)
     {
 

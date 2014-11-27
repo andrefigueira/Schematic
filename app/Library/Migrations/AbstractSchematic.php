@@ -2,7 +2,6 @@
 
 namespace Library\Migrations;
 
-use Library\Database\DatabaseInterface;
 use Library\Logger\LogInterface;
 use Library\Migrations\FileApi\FileGeneratorInferface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,16 +31,12 @@ abstract class AbstractSchematic
      * We're injecting a logger and a database adapter into the Schematic which are interchangeable
      *
      * @param LogInterface $log
-     * @param DatabaseInterface $dbAdapter
-     * @param OutputInterface $outputInterface
      * @param FileGeneratorInferface $fileGenerator
      */
-    public function __construct(LogInterface $log, DatabaseInterface $dbAdapter, OutputInterface $outputInterface, FileGeneratorInferface $fileGenerator)
+    public function __construct(LogInterface $log, FileGeneratorInferface $fileGenerator)
     {
 
         $this->log = $log;
-        $this->dbAdapter = $dbAdapter;
-        $this->output = $outputInterface;
         $this->fileGenerator = $fileGenerator;
 
         return $this;
@@ -98,30 +93,7 @@ abstract class AbstractSchematic
 
         $this->environmentConfigs = $environmentConfigs;
 
-        if(isset($this->environmentConfigs->host))
-        {
-
-            $this->setDbAdapterConfigs();
-
-        }
-
         return $this;
-
-    }
-
-    /**
-     * Sets up database adapter configurations
-     *
-     * @return void
-     */
-    private function setDbAdapterConfigs()
-    {
-
-        $this->dbAdapter
-            ->setHost($this->environmentConfigs->host)
-            ->setUsername($this->environmentConfigs->user)
-            ->setPassword($this->environmentConfigs->pass)
-            ->connect();
 
     }
 
