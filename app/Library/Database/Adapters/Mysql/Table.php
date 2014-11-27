@@ -10,6 +10,8 @@ class Table implements TableInterface
 
     protected $name;
 
+    protected $databaseName;
+
     public function __construct(AdapterInterface $adapter)
     {
 
@@ -21,6 +23,15 @@ class Table implements TableInterface
     {
 
         $this->name = $name;
+
+        return $this;
+
+    }
+
+    public function setDatabaseName($databaseName)
+    {
+
+        $this->databaseName = $databaseName;
 
         return $this;
 
@@ -56,7 +67,7 @@ class Table implements TableInterface
 
         $query = $this->adapter->db->exec('
         CREATE TABLE ' . $this->name . ' (
-        `id` int(11) unsigned NOT NULL
+            `id` int(11) unsigned NOT NULL
         );
         ');
 
@@ -80,6 +91,8 @@ class Table implements TableInterface
 
         $field = new Field($this->adapter);
         $field
+            ->setDatabaseName($this->databaseName)
+            ->setTableName($this->name)
             ->setName($name)
             ->setProperties($properties);
 

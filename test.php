@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/app/bootstrap.php';
 
-
 $schema = array(
     'schematic' => array(
         'name' => 'Schematic',
@@ -11,20 +10,21 @@ $schema = array(
     'database' => array(
         'general' => array(
             'name' => 'refactor_testing_db',
-            'charset' => 'utf16',
-            'collation' => 'utf16_general_ci',
-            'engine' => 'MyISAM'
+            'charset' => 'utf8',
+            'collation' => 'utf8_general_ci',
+            'engine' => 'InnoDB'
         ),
         'tables' => array(
             'hello_world' => array(
                 'fields' => array(
                     'id' => array(
                         'type' => 'int(11)',
-                        'auto_increment' => true,
+                        'autoIncrement' => true,
                         'index' => 'PRIMARY'
                     ),
-                    'name' => array(
-                        'type' => 'int(11)'
+                    'banana' => array(
+                        'type' => 'varchar(128)',
+                        'index' => 'INDEX',
                     )
                 )
             )

@@ -9,6 +9,7 @@
 require_once __DIR__ . '/app/bootstrap.php';
 
 use Library\Cli\SchematicConsoleApp;
+use Library\Cli\SchematicExecuteConsoleApp;
 use Library\Cli\SchematicGeneratorConsoleApp;
 use Library\Cli\SchematicMappingImportConsoleApp;
 use Library\Cli\SchematicSelfUpdateConsoleApp;
@@ -22,7 +23,7 @@ $application = new Application(APP_TITLE, APP_VERSION);
  *
  * The main migrations class which runs all updates to the database
  */
-$application->add(new SchematicConsoleApp);
+$application->add(new SchematicExecuteConsoleApp);
 
 /**
  * @package SchematicGeneratorConsoleApp

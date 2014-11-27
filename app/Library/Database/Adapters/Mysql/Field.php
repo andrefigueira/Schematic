@@ -14,6 +14,10 @@ class Field implements FieldInterface
 
     protected $databaseProperties;
 
+    protected $databaseName;
+
+    protected $tableName;
+
     protected $propertyModifications = array();
 
     public function __construct(AdapterInterface $adapter)
@@ -41,10 +45,56 @@ class Field implements FieldInterface
 
     }
 
+    public function setDatabaseName($databaseName)
+    {
+
+        $this->databaseName = $databaseName;
+
+        return $this;
+
+    }
+
+    public function setTableName($tableName)
+    {
+
+        $this->tableName = $tableName;
+
+        return $this;
+
+    }
+
+    private function prepareProperties()
+    {
+
+        foreach($this->properties as $key => $value)
+        {
+
+            switch($key)
+            {
+
+                case 'autoIncrement':
+                    if($value === true){ $this->properties->{$key} = 'AUTO_INCREMENT';}
+                    break;
+
+                case 'unsigned':
+                    if($value === true){ $this->properties->{$key} = 'unsigned';}
+                    break;
+
+                default:
+
+            }
+
+        }
+
+    }
+
     public function create()
     {
 
-        $query = $this->adapter->db->exec('
+        $this->prepareProperties();
+
+        $query = $this->adapter->db->query('
+        ALTER TABLE ' . $this->tableName . ' ADD ' . $this->name . ' ' . $this->properties->type . ' ' . (isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '') . ';
         ');
 
         if($query)
@@ -65,20 +115,13 @@ class Field implements FieldInterface
     public function exists()
     {
 
-        if(isset($this->properties->rename))
-        {
-
-            $this->setName($this->properties->rename);
-
-        }
-
         $stmt = $this->adapter->db->prepare('
         SHOW COLUMNS
-        FROM hello_world
+        FROM ' . $this->tableName . '
         WHERE Field = :name
         ');
 
-        $stmt->bindParam('name', $this->name);
+        $stmt->bindParam(':name', $this->name);
 
         if($stmt->execute())
         {
@@ -100,7 +143,7 @@ class Field implements FieldInterface
 
         $stmt = $this->adapter->db->prepare('
         SHOW COLUMNS
-        FROM hello_world
+        FROM ' . $this->tableName . '
         WHERE Field = :name
         ');
 
@@ -165,6 +208,20 @@ class Field implements FieldInterface
 
         }
 
+        if(isset($this->properties->rename))
+        {
+
+            $modified = true;
+
+        }
+
+        if(isset($this->properties->index) && $this->indexExists() === false)
+        {
+
+            $modified = true;
+
+        }
+
         return $modified;
 
     }
@@ -172,19 +229,131 @@ class Field implements FieldInterface
     public function update()
     {
 
+        $this->prepareProperties();
+
+        if(isset($this->properties->rename))
+        {
+
+            $existingName = $this->name;
+
+            $this->setName($this->properties->rename);
+
+            if($this->exists() === true){ throw new \Exception('Column already exists, cannot rename...');}
+
+            $this->setName($existingName);
+
+            $sql = 'ALTER TABLE ' . $this->tableName . ' CHANGE COLUMN `' . $this->name . '` `' . $this->properties->rename . '` ' . $this->properties->type . ' ' . (isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '') . ';';
+
+        }
+        else
+        {
+
+            $sql = 'ALTER TABLE ' . $this->tableName . ' MODIFY COLUMN ' . $this->name . ' ' . $this->properties->type . ' ' . (isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '') . ';';
+
+        }
+
+        $query = $this->adapter->db->query($sql);
+
+        if($query)
+        {
+
+            if(isset($this->properties->index))
+            {
+
+                $this->createIndex($this->properties->index);
+
+            }
+
+            return true;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to create field');
+
+        }
+
+    }
+
+    protected function validIndexTypes()
+    {
+
+        return array(
+            'INDEX',
+            'UNIQUE',
+            'PRIMARY KEY'
+        );
+
+    }
+
+    protected function isValidIndex($type)
+    {
+
+        return in_array($type, $this->validIndexTypes());
+
+    }
+
+    protected function indexExists()
+    {
+
+        $stmt = $this->adapter->db->prepare('
+        SHOW INDEXES
+        FROM ' . $this->tableName . '
+        WHERE Column_name = :name
+        ');
+
+        $stmt->bindParam(':name', $this->name);
+
+        if($stmt->execute())
+        {
+
+            return (bool) $stmt->rowCount();
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to check if index exists');
+
+        }
+
+    }
+
+    protected function createIndex($type)
+    {
+
+        if(!$this->isValidIndex($type)){ throw new \Exception('Invalid index type');}
+        if($this->indexExists()){ throw new \Exception('Unable to create index, one already exists');}
+
+        $query = $this->adapter->db->query('
+        ALTER TABLE ' . $this->tableName . ' ADD ' . $type . ' ' . $this->name . ' (' . $this->name . ');
+        ');
+
+        if($query)
+        {
+
+            return true;
+
+        }
+        else
+        {
+
+            throw new \Exception('Unable to create index');
+
+        }
+
+    }
+
+    protected function relationExists()
+    {
+
 
 
     }
 
-    protected function createRelation($field, $relatedTable, $relatedField)
+    protected function createRelation($relatedTable, $relatedField)
     {
-
-
-    }
-
-    protected function createIndex($name, $field, $type)
-    {
-
 
 
     }

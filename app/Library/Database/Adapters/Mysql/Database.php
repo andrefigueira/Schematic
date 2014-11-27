@@ -221,7 +221,9 @@ class Database implements DatabaseInterface
 
         $table = new Table($this->adapter);
 
-        $table->setName($name);
+        $table
+            ->setName($name)
+            ->setDatabaseName($this->name);
 
         return $table;
 
