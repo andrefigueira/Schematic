@@ -21,7 +21,7 @@ A database migrations tool, allows for easy database maintenance in a way that i
 
 Download the PHAR file:
 
-    wget https://github.com/andrefigueira/Schematic/raw/master/schematic.phar
+    wget --no-check-certificate https://github.com/andrefigueira/Schematic/raw/master/schematic.phar
 
 Make the PHAR package executable
 
