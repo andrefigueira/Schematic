@@ -11,20 +11,16 @@ use Symfony\Component\Console\Question\Question;
 
 class SchematicInitConsoleApp extends Command
 {
-
     protected function configure()
     {
-
         $this
             ->setName('init')
             ->setDescription('Sets up default configuration for schematic including schema folder and schematic config file')
         ;
-
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
         $helper = $this->getHelper('question');
         $dialog = $this->getHelper('dialog');
 
@@ -41,16 +37,13 @@ class SchematicInitConsoleApp extends Command
 
         $fileType = $fileTypes[$fileTypeResult];
 
-        $output->writeln('<comment>Using: ' . $fileType . '</comment>');
+        $output->writeln('<comment>Using: '.$fileType.'</comment>');
 
-        $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
+        $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\'.ucfirst($fileType).'Adapter';
 
         $schematicInstaller = new SchematicInstaller($output, new $fileAdapterClass($output));
         $schematicInstaller
             ->setFileFormatType($fileType)
             ->run();
-
-
     }
-
 }

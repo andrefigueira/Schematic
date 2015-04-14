@@ -13,7 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SchematicUpdater
 {
-
     /** @var string Main homepage of the project where the files and resources live */
     const HOMEPAGE = 'http://andrefigueira.github.io/Schematic/';
 
@@ -43,134 +42,102 @@ class SchematicUpdater
      * to determine which script run schematic this time to know what to update.
      *
      * @param OutputInterface $output
+     *
      * @throws \Exception
      */
     public function __construct(OutputInterface $output)
     {
-
         $this->output = $output;
 
         $this->isCurlInstalled();
 
         $this->setSchematicInstallPath();
-
     }
 
     /**
-     * Check if curl is installed throw error if not and exit the program
+     * Check if curl is installed throw error if not and exit the program.
      */
     private function isCurlInstalled()
     {
-
-        if(!function_exists('curl_version'))
-        {
-
+        if (!function_exists('curl_version')) {
             $this->output->writeln('<comment>Curl is not installed, run sudo apt-get install php5-curl, then run this again..</comment>');
 
             exit;
-
         }
-
     }
 
     /**
-     * Fetches the current version based on the installPath, does an md5 to see the checksum
+     * Fetches the current version based on the installPath, does an md5 to see the checksum.
      *
      * @return string
      */
     private function getCurrentVersion()
     {
-
-        if($this->debug)
-        {
-
+        if ($this->debug) {
             $installPath = self::INSTALL_PATH;
-
-        }
-        else
-        {
-
+        } else {
             $installPath = $this->installPath;
-
         }
 
-        if(file_exists($installPath))
-        {
-
+        if (file_exists($installPath)) {
             return md5_file($installPath);
-
-        }
-        else
-        {
-
+        } else {
             return false;
-
         }
-
     }
 
     /**
-     * Fetches the checksum of the latest file on the remote
+     * Fetches the checksum of the latest file on the remote.
      *
      * @return string
      */
     private function getLatestVersion()
     {
-
-        $content = trim(file_get_contents(self::HOMEPAGE . '/version'));
+        $content = trim(file_get_contents(self::HOMEPAGE.'/version'));
 
         return $content;
-
     }
 
     /**
-     * Getter for retreiving the latest versions checksum
+     * Getter for retreiving the latest versions checksum.
      *
      * @return string
      */
     public function getLatestVersionChecksum()
     {
-
         return $this->latestVersionChecksum;
-
     }
 
     /**
-     * Checks if the versions match of if there is a difference in the versions to see if we should update
+     * Checks if the versions match of if there is a difference in the versions to see if we should update.
      *
      * @return bool
      */
     public function isCurrentVersionLatest()
     {
-
         $this->latestVersionChecksum = $this->getLatestVersion();
 
         return ($this->getCurrentVersion() == $this->latestVersionChecksum);
-
     }
 
     /**
-     * Checker to see if the script has been run directly as php cli.php as we don't want to update the cli.php as its local
+     * Checker to see if the script has been run directly as php cli.php as we don't want to update the cli.php as its local.
      *
      * @return bool
      */
     public function isUpdaterRunningFromCliPhp()
     {
-
-       return (isset($_SERVER['argv']) && $_SERVER['argv'][0] == 'cli.php');
-
+        return (isset($_SERVER['argv']) && $_SERVER['argv'][0] == 'cli.php');
     }
 
     /**
-     * Check if we have the script which was run and set it as the install path, as its what we would like to replace
+     * Check if we have the script which was run and set it as the install path, as its what we would like to replace.
      *
      * @throws \Exception
      */
     private function setSchematicInstallPath()
     {
-
-        switch(true)
-        {
+        switch (true) {
 
             case isset($_SERVER['PHP_SELF']):
                 $this->installPath = $_SERVER['PHP_SELF'];
@@ -192,16 +159,14 @@ class SchematicUpdater
                 throw new \Exception('Unable to determine Schematic install path, please install manually...');
 
         }
-
     }
 
     /**
      * Sets up the download of the latest version from the remote, handles the creation of the progress bar also and the moving of
-     * the file to the correct area
+     * the file to the correct area.
      */
     private function downloadLatestVersion()
     {
-
         $fileSize = $this->getSize(self::TRUNK_SCHEMATIC_STABLE_BIN);
 
         $this->progress = new ProgressBar($this->output, $fileSize);
@@ -213,178 +178,127 @@ class SchematicUpdater
         $this->progress->setRedrawFrequency(1);
         $this->progress->setMessage(self::TRUNK_SCHEMATIC_STABLE_BIN, 'filename');
 
-
         $packetSize = 262144;
 
-        if($packetSize > $fileSize)
-        {
-
+        if ($packetSize > $fileSize) {
             $packetSize = $fileSize;
-
         }
 
         $this->download(self::TRUNK_SCHEMATIC_STABLE_BIN, $packetSize);
-
     }
 
     /**
-     * Bootstrap method for downloading the latest version
+     * Bootstrap method for downloading the latest version.
      */
     public function updateSchematic()
     {
-
         $this->downloadLatestVersion();
-
     }
 
     /**
-     * This downloads the actual file and progresses the progress bar, finalizes the installation
+     * This downloads the actual file and progresses the progress bar, finalizes the installation.
      *
      * @param $file
      * @param $chunks
      */
     private function download($file, $chunks)
     {
-
         set_time_limit(0);
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-disposition: attachment; filename=' . basename($file));
+        header('Content-disposition: attachment; filename='.basename($file));
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
         header('Pragma: public');
 
         $size = $this->getSize($file);
 
-        header('Content-Length: ' . $size);
+        header('Content-Length: '.$size);
 
         $i = 0;
 
-        while($i <= $size)
-        {
-
+        while ($i <= $size) {
             $this->getChunk($file, (($i == 0) ? $i : $i + 1), ((($i + $chunks) > $size) ? $size : $i + $chunks));
 
             $i = ($i + $chunks);
-
         }
 
         $this->progress->finish();
 
-        $this->output->writeln(PHP_EOL . '<info>Finished downloading</info>');
+        $this->output->writeln(PHP_EOL.'<info>Finished downloading</info>');
         $this->output->writeln('<info>Installing Schematic...</info>');
 
         $this->replaceExistingInstall();
-
-
     }
 
     /**
-     * Replaces the existing installation of Schematic based on the execute path of where the script was run from
+     * Replaces the existing installation of Schematic based on the execute path of where the script was run from.
      *
      * @throws \Exception
      */
     private function replaceExistingInstall()
     {
-
-        if($this->debug)
-        {
-
+        if ($this->debug) {
             $existingInstallPath = self::INSTALL_PATH;
-
-        }
-        else
-        {
-
+        } else {
             $existingInstallPath = $this->installPath;
-
         }
 
         $checksum = md5_file(self::TMP_SCHEMATIC);
 
-        if(@rename(self::TMP_SCHEMATIC, $existingInstallPath) === false)
-        {
-
+        if (@rename(self::TMP_SCHEMATIC, $existingInstallPath) === false) {
             unlink(self::TMP_SCHEMATIC);
 
             throw new \Exception('Unable to replace old version... check permissions');
-
-        }
-        else
-        {
-
-            if(chmod($existingInstallPath, 0755))
-            {
-
-                $this->output->writeln('<info>Successfully installed Schematic version ' . $checksum . '</info>');
-
+        } else {
+            if (chmod($existingInstallPath, 0755)) {
+                $this->output->writeln('<info>Successfully installed Schematic version '.$checksum.'</info>');
+            } else {
+                $this->output->writeln('<info>Successfully installed Schematic version '.$checksum.', but failed to set permissions, run chmod '.self::INSTALL_PATH.' manually to use it globally</info>');
             }
-            else
-            {
-
-                $this->output->writeln('<info>Successfully installed Schematic version ' . $checksum . ', but failed to set permissions, run chmod ' . self::INSTALL_PATH . ' manually to use it globally</info>');
-
-            }
-
         }
-
     }
 
     /**
-     * Callback method for CURLOPT_WRITEFUNCTION, this prints the chunk
+     * Callback method for CURLOPT_WRITEFUNCTION, this prints the chunk.
      *
      * @param $ch
      * @param $str
+     *
      * @return int
      */
     private function chunk($ch, $str)
     {
-
         $this->progress->advance(strlen($str));
 
         $this->addToFile($str);
 
         return strlen($str);
-
     }
 
     /**
-     * Appends the downloaded chunks to the file
+     * Appends the downloaded chunks to the file.
      *
      * @param $chunk
+     *
      * @throws \Exception
      */
     private function addToFile($chunk)
     {
-
-        if(file_exists(self::TMP_SCHEMATIC))
-        {
-
-            if(@file_put_contents(self::TMP_SCHEMATIC, $chunk, FILE_APPEND | LOCK_EX) === false)
-            {
-
+        if (file_exists(self::TMP_SCHEMATIC)) {
+            if (@file_put_contents(self::TMP_SCHEMATIC, $chunk, FILE_APPEND | LOCK_EX) === false) {
                 throw new \Exception('Failed to download file to local area, please check permissions...');
-
             }
-
-        }
-        else
-        {
-
-            if(@file_put_contents(self::TMP_SCHEMATIC, $chunk) === false)
-            {
-
+        } else {
+            if (@file_put_contents(self::TMP_SCHEMATIC, $chunk) === false) {
                 throw new \Exception('Failed to download file and create it in the local area, please check permissions...');
-
             }
-
         }
-
     }
 
     /**
-     * Gets the range of bytes from the remote file
+     * Gets the range of bytes from the remote file.
      *
      * @param $file
      * @param $start
@@ -392,11 +306,10 @@ class SchematicUpdater
      */
     private function getChunk($file, $start, $end)
     {
-
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $file);
-        curl_setopt($ch, CURLOPT_RANGE, $start . '-' . $end);
+        curl_setopt($ch, CURLOPT_RANGE, $start.'-'.$end);
         curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_WRITEFUNCTION, array($this, 'chunk'));
@@ -404,18 +317,17 @@ class SchematicUpdater
         $result = curl_exec($ch);
 
         curl_close($ch);
-
     }
 
     /**
-     * Gets the total size of the file
+     * Gets the total size of the file.
      *
      * @param $url
+     *
      * @return int
      */
     private function getSize($url)
     {
-
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -428,7 +340,5 @@ class SchematicUpdater
         $size = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 
         return intval($size);
-
     }
-
 }

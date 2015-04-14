@@ -1,6 +1,6 @@
 <?php
 /**
- * This abstract class defines some specific getters or setters for the database adapters
+ * This abstract class defines some specific getters or setters for the database adapters.
  *
  * @author Andre Figueira <andre.figueira@me.com>
  */
@@ -9,7 +9,6 @@ namespace Library\Database;
 
 abstract class AbstractDatabaseAdapter
 {
-
     /** @var string The host to connect to */
     protected $host;
 
@@ -23,63 +22,58 @@ abstract class AbstractDatabaseAdapter
     protected $dbName;
 
     /**
-     * Setter for the host
+     * Setter for the host.
      *
      * @param $host
+     *
      * @return $this
      */
     public function setHost($host)
     {
-
         $this->host = $host;
 
         return $this;
-
     }
 
     /**
-     * Setter for the username
+     * Setter for the username.
      *
      * @param $username
+     *
      * @return $this
      */
     public function setUsername($username)
     {
-
         $this->username = $username;
 
         return $this;
-
     }
 
     /**
-     * Setter for the password
+     * Setter for the password.
      *
      * @param $password
+     *
      * @return $this
      */
     public function setPassword($password)
     {
-
         $this->password = $password;
 
         return $this;
-
     }
 
     /**
-     * Setter for the dbName
+     * Setter for the dbName.
      *
      * @param $dbName
+     *
      * @return $this
      */
     public function setDbName($dbName)
     {
-
         $this->dbName = $dbName;
 
         return $this;
-
     }
-
 }

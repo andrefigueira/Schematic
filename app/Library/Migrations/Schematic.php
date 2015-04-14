@@ -5,14 +5,12 @@
  * script it will then run through and make the updates to the database.
  *
  * @author <Andre Figueira> andre.figueira@me.com
- *
  */
 
 namespace Library\Migrations;
 
 class Schematic extends AbstractSchematic
 {
-
     /** @var string The base directory for the schematic install */
     protected $baseDir = '';
 
@@ -41,251 +39,161 @@ class Schematic extends AbstractSchematic
     protected $dbAdapter;
 
     /**
-     * Set the schema file to be used currently
+     * Set the schema file to be used currently.
      *
      * @param $schemaFile
      */
     public function setSchemaFile($schemaFile)
     {
-
         $this->schemaFile = $schemaFile;
-
     }
 
     /**
-     * Gets the current schema object which is relevant to the current file proecting
+     * Gets the current schema object which is relevant to the current file proecting.
      *
      * @return Object
      */
     public function getSchema()
     {
-
         return $this->schema;
-
     }
 
     /**
-     * Checks if the schema file exists, if it does, assigns the interpretted schema file to a schema property within the instance
+     * Checks if the schema file exists, if it does, assigns the interpretted schema file to a schema property within the instance.
      *
      * @throws \Exception
      */
     private function exists()
     {
-
         $this->realSchemaDir = $this->directory;
 
-        if(is_dir($this->realSchemaDir))
-        {
-
-            if(!$this->isEmptyDir($this->realSchemaDir))
-            {
-
-                $specificSchemaDir = $this->realSchemaDir . $this->schemaFile;
+        if (is_dir($this->realSchemaDir)) {
+            if (!$this->isEmptyDir($this->realSchemaDir)) {
+                $specificSchemaDir = $this->realSchemaDir.$this->schemaFile;
                 $specificSchemaConfFile = $specificSchemaDir;
 
-                if(file_exists($specificSchemaConfFile))
-                {
-
-                    $this->output->writeln('Loading schema file: ' . $specificSchemaConfFile);
+                if (file_exists($specificSchemaConfFile)) {
+                    $this->output->writeln('Loading schema file: '.$specificSchemaConfFile);
 
                     $this->schema = @file_get_contents($specificSchemaConfFile);
 
-                    if($this->schema)
-                    {
-
+                    if ($this->schema) {
                         $this->schema = $this->fileGenerator->convertToObject($this->schema);
 
                         $this->dbAdapter->setSchema($this->schema);
-
+                    } else {
+                        throw new \Exception('Unable to load the schema file: '.$specificSchemaConfFile);
                     }
-                    else
-                    {
-
-                        throw new \Exception('Unable to load the schema file: ' . $specificSchemaConfFile);
-
-                    }
-
-                }
-                else
-                {
-
-                    throw new \Exception('Schema file does not exist: ' . $specificSchemaConfFile);
-
+                } else {
+                    throw new \Exception('Schema file does not exist: '.$specificSchemaConfFile);
                 }
 
                 return true;
-
-            }
-            else
-            {
-
+            } else {
                 throw new \Exception('No schemas in folder');
-
             }
-
+        } else {
+            throw new \Exception('Schema folder does not exist: '.$this->realSchemaDir);
         }
-        else
-        {
-
-            throw new \Exception('Schema folder does not exist: ' . $this->realSchemaDir);
-
-        }
-
     }
 
     /**
-     * Runs a query to create the database if it does not yet exist
+     * Runs a query to create the database if it does not yet exist.
      *
      * @return bool
-     * @throws \Exception
      *
+     * @throws \Exception
      */
     private function createDb()
     {
-
         return $this->dbAdapter->createDatabase($this->schema->database->general->name);
-
     }
 
     /**
-     * Sets up the MySQL connection, runs the table generation and builds the query then runs it
+     * Sets up the MySQL connection, runs the table generation and builds the query then runs it.
      *
      * @throws \Exception
      */
     public function generate()
     {
-
         $this->dbAdapter->setDbName($this->schema->database->general->name);
 
-        foreach($this->schema->database->tables as $table => $settings)
-        {
-
-            if($this->createDb())
-            {
-
-                $this->log->write('Created database ' . $this->schema->database->general->name);
-
-            }
-            else
-            {
-
+        foreach ($this->schema->database->tables as $table => $settings) {
+            if ($this->createDb()) {
+                $this->log->write('Created database '.$this->schema->database->general->name);
+            } else {
                 throw new \Exception('Unable to create database');
-
             }
 
-            if($this->dbAdapter->migrateTable($table, $settings))
-            {
-
-                $this->output->writeln('<info>Successfully migrated the ' . $table . ' table</info>');
-
+            if ($this->dbAdapter->migrateTable($table, $settings)) {
+                $this->output->writeln('<info>Successfully migrated the '.$table.' table</info>');
+            } else {
+                $this->output->writeln('<error>Failed to migrate the '.$table.' table</error>');
             }
-            else
-            {
-
-                $this->output->writeln('<error>Failed to migrate the ' . $table . ' table</error>');
-
-            }
-
         }
-
     }
 
     /**
-     * Checks to see if the directory is empty
+     * Checks to see if the directory is empty.
      *
      * @param $dir
-     * @return bool|null
      *
+     * @return bool|null
      */
     private function isEmptyDir($dir)
     {
+        if (!is_readable($dir)) {
+            return;
+        }
 
-        if(!is_readable($dir)) return null;
         return (count(scandir($dir)) == 2);
-
     }
 
     /**
-     * Runs through the directory and executes for all of the schema files in the schema directory
+     * Runs through the directory and executes for all of the schema files in the schema directory.
      *
      * @throws \Exception
      */
     public function run()
     {
-
         $this->output->writeln('<info>Begining migrations...</info>');
 
         $dir = new \DirectoryIterator($this->directory);
 
-        foreach($dir as $fileInfo)
-        {
-
+        foreach ($dir as $fileInfo) {
             $fileName = $fileInfo->getFilename();
 
             $this->setSchemaFile($fileName);
 
-            if(!$fileInfo->isDot() && $fileName != 'config' && $fileName != '.DS_Store')
-            {
+            if (!$fileInfo->isDot() && $fileName != 'config' && $fileName != '.DS_Store') {
+                $filePath = $fileInfo->getPath().'/'.$fileName;
 
-                $filePath = $fileInfo->getPath() . '/' . $fileName;
-
-                if($fileInfo->isDir())
-                {
-
+                if ($fileInfo->isDir()) {
                     $subDir = new \DirectoryIterator($filePath);
 
-                    foreach($subDir as $subFileInfo)
-                    {
+                    foreach ($subDir as $subFileInfo) {
+                        $this->setSchemaFile($fileName.'/'.$subFileInfo->getFilename());
 
-                        $this->setSchemaFile($fileName . '/' . $subFileInfo->getFilename());
-
-                        if(!$subFileInfo->isDot())
-                        {
-
-                            if($this->exists())
-                            {
-
+                        if (!$subFileInfo->isDot()) {
+                            if ($this->exists()) {
                                 $this->generate();
-
-                            }
-                            else
-                            {
-
+                            } else {
                                 throw new \Exception('No schematics exist...');
-
                             }
-
                         }
-
                     }
-
-                }
-                else
-                {
-
-                    if($this->exists())
-                    {
-
+                } else {
+                    if ($this->exists()) {
                         $this->generate();
-
-                    }
-                    else
-                    {
-
+                    } else {
                         throw new \Exception('No schematics exist...');
-
                     }
-
                 }
-
             }
-
         }
 
         $this->dbAdapter->applyForeignKeys();
 
         $this->output->writeln('<info>Migrations completed</info>');
-
     }
-
 }

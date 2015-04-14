@@ -2,14 +2,10 @@
 
 namespace Library\Cli;
 
-use Library\Database\Adapters\MysqlAdapter;
+use Library\Database\Adapters\Mysql\Adapter;
 use Library\Helpers\SchematicHelper;
 use Library\Logger\Log;
-use Library\Migrations\Configurations;
-use Library\Migrations\FileApi\Adapters\JsonAdapter;
-use Library\Migrations\FileApi\Adapters\YamlAdapter;
 use Library\Migrations\SchematicMappingImport;
-use Library\Updater\SchematicUpdater;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SchematicMappingImportConsoleApp extends Command
 {
-
     protected function configure()
     {
         $this
@@ -51,29 +46,26 @@ class SchematicMappingImportConsoleApp extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
         $environment = $input->getArgument('env');
         $dbName = $input->getArgument('db');
 
         $config = SchematicHelper::init($output, array(
             'fileType' => $input->getOption('fileType'),
             'directory' => $input->getOption('dir'),
-            'environment' => $environment
+            'environment' => $environment,
         ));
 
         $directory = $config['directory'];
         $fileType = $config['fileType'];
         $database = $config['driver'];
 
-        $databaseAdapterClass = '\Library\Database\Adapters\\' . ucfirst($database) . 'Adapter';
+        $databaseAdapterClass = '\Library\Database\Adapters\\' . ucfirst($database) . '\Adapter';
         $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
 
         $output->writeln('<info>Beginning database mapping</info>');
 
         $schematic = new SchematicMappingImport(
             new Log(),
-            new $databaseAdapterClass(),
-            $output,
             new $fileAdapterClass($output)
         );
 
@@ -84,7 +76,5 @@ class SchematicMappingImportConsoleApp extends Command
             ->setEnvironmentConfigs($config['environmentConfigs'])
             ->run()
         ;
-
     }
-
 }

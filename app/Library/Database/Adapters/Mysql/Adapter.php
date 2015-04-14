@@ -6,7 +6,6 @@ use Library\Database\Adapters\Interfaces\AdapterInterface;
 
 class Adapter implements AdapterInterface
 {
-
     public $db;
 
     protected $host = '127.0.0.1';
@@ -19,77 +18,60 @@ class Adapter implements AdapterInterface
 
     public function __construct($databaseName)
     {
-
         $this->setDatabaseName($databaseName);
 
         $this->connect();
-
     }
 
     /**
      * @param string $host
+     *
      * @return $this
      */
     public function setHost($host)
     {
-
         $this->host = $host;
 
         return $this;
-
     }
 
     /**
      * @param string $pass
+     *
      * @return $this
      */
     public function setPass($pass)
     {
-
         $this->pass = $pass;
 
         return $this;
-
     }
 
     /**
      * @param string $user
+     *
      * @return $this
      */
     public function setUser($user)
     {
-
         $this->user = $user;
 
         return $this;
-
     }
 
     public function setDatabaseName($databaseName)
     {
-
         $this->databaseName = $databaseName;
-
     }
 
     protected function connect()
     {
-
-        try
-        {
-
-            $this->db = new \PDO('mysql:host=' . $this->host . ';dbname=' . $this->databaseName . ';', $this->user, $this->pass);
+        try {
+            $this->db = new \PDO('mysql:host='.$this->host.';dbname='.$this->databaseName.';', $this->user, $this->pass);
 
             $this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-        }
-        catch(\Exception $e)
-        {
-
+        } catch (\Exception $e) {
             echo $e->getMessage();
-
         }
-
     }
-
 }

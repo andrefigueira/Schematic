@@ -4,11 +4,9 @@ namespace Library\Migrations;
 
 use Library\Logger\LogInterface;
 use Library\Migrations\FileApi\FileGeneratorInferface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractSchematic
 {
-
     /** @var string the format type to use */
     protected $formatType;
 
@@ -28,73 +26,67 @@ abstract class AbstractSchematic
     protected $config;
 
     /**
-     * We're injecting a logger and a database adapter into the Schematic which are interchangeable
+     * We're injecting a logger and a database adapter into the Schematic which are interchangeable.
      *
-     * @param LogInterface $log
+     * @param LogInterface           $log
      * @param FileGeneratorInferface $fileGenerator
      */
     public function __construct(LogInterface $log, FileGeneratorInferface $fileGenerator)
     {
-
         $this->log = $log;
         $this->fileGenerator = $fileGenerator;
 
         return $this;
-
     }
 
     /**
-     * Setter for the format type
+     * Setter for the format type.
      *
      * @param $formatType
+     *
      * @return $this
      */
     public function setFileFormatType($formatType)
     {
-
         $this->formatType = $formatType;
 
         return $this;
-
     }
 
     /**
-     * Setter for the working directory
+     * Setter for the working directory.
      *
      * @param $directory
+     *
      * @return $this
      */
     public function setDirectory($directory)
     {
-
-        if(substr($directory, -1) != '/'){ $directory = $directory . '/';}
+        if (substr($directory, -1) != '/') {
+            $directory = $directory.'/';
+        }
 
         $this->directory = $directory;
 
         return $this;
-
     }
 
     /**
      * @param mixed $database
+     *
      * @return $this
      */
     public function setDatabase($database)
     {
-
         $this->database = $database;
 
         return $this;
-
     }
 
     public function setEnvironmentConfigs($environmentConfigs)
     {
-
         $this->environmentConfigs = $environmentConfigs;
 
         return $this;
-
     }
-
 }
