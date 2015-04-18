@@ -5,18 +5,40 @@ namespace Library\Database\Adapters\Mysql;
 use Library\Database\Adapters\Interfaces\AdapterInterface;
 use Library\Database\Adapters\Interfaces\DatabaseInterface;
 
+/**
+ * Class Database
+ * @package Library\Database\Adapters\Mysql
+ */
 class Database implements DatabaseInterface
 {
+    /**
+     * @var string
+     */
     protected $name;
 
+    /**
+     * @var string
+     */
     protected $charset;
 
+    /**
+     * @var string
+     */
     protected $collation;
 
+    /**
+     * @var string
+     */
     protected $engine;
 
+    /**
+     * @var \stdClass
+     */
     protected $variables;
 
+    /**
+     * @var array
+     */
     protected $variableModifications = array();
 
     public function __construct(AdapterInterface $adapter)
@@ -25,6 +47,10 @@ class Database implements DatabaseInterface
         $this->variables = $this->fetchVariables();
     }
 
+    /**
+     * @param $name
+     * @return $this
+     */
     public function setName($name)
     {
         $this->name = $name;
@@ -32,11 +58,18 @@ class Database implements DatabaseInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * @param $charset
+     * @return $this
+     */
     public function setCharset($charset)
     {
         $this->charset = $charset;
@@ -44,6 +77,10 @@ class Database implements DatabaseInterface
         return $this;
     }
 
+    /**
+     * @param $collation
+     * @return $this
+     */
     public function setCollation($collation)
     {
         $this->collation = $collation;
@@ -51,6 +88,10 @@ class Database implements DatabaseInterface
         return $this;
     }
 
+    /**
+     * @param $engine
+     * @return $this
+     */
     public function setEngine($engine)
     {
         $this->engine = $engine;
@@ -58,6 +99,10 @@ class Database implements DatabaseInterface
         return $this;
     }
 
+    /**
+     * @return \stdClass
+     * @throws \Exception
+     */
     protected function fetchVariables()
     {
         $stmt = $this->adapter->db->prepare('
@@ -82,6 +127,10 @@ class Database implements DatabaseInterface
         }
     }
 
+    /**
+     * @param bool $reverse
+     * @return array
+     */
     private function semanticVariableNames($reverse = false)
     {
         $array = array(
@@ -97,11 +146,20 @@ class Database implements DatabaseInterface
         return $array;
     }
 
+    /**
+     * @param $name
+     * @param bool $reverse
+     * @return mixed
+     */
     private function semantisizeVariableName($name, $reverse = false)
     {
         return $this->semanticVariableNames($reverse)[$name];
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function exists()
     {
         $stmt = $this->adapter->db->prepare('
@@ -118,6 +176,9 @@ class Database implements DatabaseInterface
         }
     }
 
+    /**
+     * @return bool
+     */
     public function modified()
     {
         $modified = false;
@@ -136,6 +197,10 @@ class Database implements DatabaseInterface
         return $modified;
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function create()
     {
         $query = $this->adapter->db->exec('
@@ -149,6 +214,9 @@ class Database implements DatabaseInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function update()
     {
         foreach ($this->variableModifications as $mofification) {
@@ -162,6 +230,10 @@ class Database implements DatabaseInterface
         }
     }
 
+    /**
+     * @param $name
+     * @return Table
+     */
     public function getTable($name)
     {
         $table = new Table($this->adapter);

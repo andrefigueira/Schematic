@@ -7,6 +7,10 @@ namespace Library\Migrations;
 
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class Configurations
+ * @package Library\Migrations
+ */
 class Configurations
 {
     /** @var bool The file type being used */

@@ -7,13 +7,16 @@
 
 namespace Library\Database;
 
+/**
+ * Interface DatabaseInterface
+ * @package Library\Database
+ */
 interface DatabaseInterface
 {
     /**
      * Should set a protected host property.
      *
      * @param $host
-     *
      * @return mixed
      */
     public function setHost($host);
@@ -22,7 +25,6 @@ interface DatabaseInterface
      * Should set a protected username property.
      *
      * @param $username
-     *
      * @return mixed
      */
     public function setUsername($username);
@@ -31,7 +33,6 @@ interface DatabaseInterface
      * Should set a protected username property.
      *
      * @param $password
-     *
      * @return mixed
      */
     public function setPassword($password);
@@ -40,7 +41,6 @@ interface DatabaseInterface
      * Should set a protected dbName property.
      *
      * @param $dbName
-     *
      * @return mixed
      */
     public function setDbName($dbName);
@@ -63,7 +63,6 @@ interface DatabaseInterface
      * Should check if a field exists in a table on the database.
      *
      * @param $name
-     *
      * @return mixed
      */
     public function fieldExists($name);
@@ -72,7 +71,6 @@ interface DatabaseInterface
      * Should be able to run multiple queries at once.
      *
      * @param $query
-     *
      * @return mixed
      */
     public function multiQuery($query);
@@ -81,7 +79,6 @@ interface DatabaseInterface
      * Should be able to run queries on the database.
      *
      * @param $query
-     *
      * @return mixed
      */
     public function query($query);
@@ -90,7 +87,6 @@ interface DatabaseInterface
      * Should fetch fields from table in object format.
      *
      * @param $table
-     *
      * @return mixed
      */
     public function showFields($table);

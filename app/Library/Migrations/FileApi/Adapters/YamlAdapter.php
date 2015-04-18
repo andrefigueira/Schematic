@@ -45,7 +45,6 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      *
      * @param $table
      * @param $fields
-     *
      * @return array
      */
     private function mapToFormat($table, $fields)

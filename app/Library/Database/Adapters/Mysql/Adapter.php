@@ -5,16 +5,36 @@ namespace Library\Database\Adapters\Mysql;
 use Library\Database\Adapters\Interfaces\AdapterInterface;
 use Library\Helpers\SchematicHelper;
 
+/**
+ * Class Adapter
+ * @package Library\Database\Adapters\Mysql
+ */
 class Adapter implements AdapterInterface
 {
+
+    /**
+     * @var string
+     */
     public $db;
 
+    /**
+     * @var string
+     */
     protected $host = '127.0.0.1';
 
+    /**
+     * @var string
+     */
     protected $user = 'root';
 
+    /**
+     * @var string
+     */
     protected $pass = '';
 
+    /**
+     * @var string
+     */
     protected $databaseName;
 
     public function __construct($databaseName)
@@ -58,11 +78,17 @@ class Adapter implements AdapterInterface
         return $this;
     }
 
+    /**
+     * @param $databaseName
+     */
     public function setDatabaseName($databaseName)
     {
         $this->databaseName = $databaseName;
     }
 
+    /**
+     * @return $this
+     */
     public function connect()
     {
         try {
@@ -77,6 +103,11 @@ class Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * @param $databaseName
+     * @return bool
+     * @throws Exception
+     */
     public function useDatabase($databaseName)
     {
         $sql = 'use ' . $databaseName;
@@ -122,6 +153,10 @@ class Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * @return \stdClass
+     * @throws \Exception
+     */
     public function fetchDatabaseVariables()
     {
         $sql = 'SHOW variables;';
@@ -143,6 +178,11 @@ class Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * @param $table
+     * @return \stdClass
+     * @throws \Exception
+     */
     public function fetchFields($table)
     {
         $sql = 'DESCRIBE ' . $table;
@@ -164,6 +204,12 @@ class Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * @param $table
+     * @param $field
+     * @return mixed
+     * @throws \Exception
+     */
     public function fetchFieldConstraints($table, $field)
     {
         $sql = '
@@ -190,6 +236,11 @@ class Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * @param $constraintName
+     * @return mixed
+     * @throws \Exception
+     */
     public function fetchFieldConstraintsActions($constraintName)
     {
         $sql = '
@@ -211,6 +262,10 @@ class Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * @return \stdClass
+     * @throws Exception
+     */
     public function mapDatabase()
     {
         return $this->fetchTables();

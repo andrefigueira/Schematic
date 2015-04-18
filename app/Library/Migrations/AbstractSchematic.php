@@ -5,6 +5,10 @@ namespace Library\Migrations;
 use Library\Logger\LogInterface;
 use Library\Migrations\FileApi\FileGeneratorInferface;
 
+/**
+ * Class AbstractSchematic
+ * @package Library\Migrations
+ */
 abstract class AbstractSchematic
 {
     /** @var string the format type to use */

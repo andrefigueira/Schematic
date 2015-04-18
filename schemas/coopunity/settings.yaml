@@ -4,8 +4,8 @@ schematic:
 database:
     general:
         name: coopunity
-        charset: utf8
-        collation: utf8_general_ci
+        charset: latin1
+        collation: latin1_swedish_ci
         engine: InnoDB
     tables:
         settings:

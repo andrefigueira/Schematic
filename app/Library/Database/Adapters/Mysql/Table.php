@@ -5,10 +5,20 @@ namespace Library\Database\Adapters\Mysql;
 use Library\Database\Adapters\Interfaces\AdapterInterface;
 use Library\Database\Adapters\Interfaces\TableInterface;
 
+/**
+ * Class Table
+ * @package Library\Database\Adapters\Mysql
+ */
 class Table implements TableInterface
 {
+    /**
+     * @var string
+     */
     protected $name;
 
+    /**
+     * @var string
+     */
     protected $databaseName;
 
     public function __construct(AdapterInterface $adapter)
@@ -16,6 +26,10 @@ class Table implements TableInterface
         $this->adapter = $adapter;
     }
 
+    /**
+     * @param $name
+     * @return $this
+     */
     public function setName($name)
     {
         $this->name = $name;
@@ -23,6 +37,10 @@ class Table implements TableInterface
         return $this;
     }
 
+    /**
+     * @param $databaseName
+     * @return $this
+     */
     public function setDatabaseName($databaseName)
     {
         $this->databaseName = $databaseName;
@@ -30,6 +48,10 @@ class Table implements TableInterface
         return $this;
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function exists()
     {
         $stmt = $this->adapter->db->prepare('
@@ -46,6 +68,10 @@ class Table implements TableInterface
         }
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function create()
     {
         $query = $this->adapter->db->exec('
@@ -61,6 +87,11 @@ class Table implements TableInterface
         }
     }
 
+    /**
+     * @param $name
+     * @param $properties
+     * @return Field
+     */
     public function getField($name, $properties)
     {
         $field = new Field($this->adapter);

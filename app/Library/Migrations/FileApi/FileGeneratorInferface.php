@@ -5,6 +5,10 @@
 
 namespace Library\Migrations\FileApi;
 
+/**
+ * Interface FileGeneratorInferface
+ * @package Library\Migrations\FileApi
+ */
 interface FileGeneratorInferface
 {
     /**

@@ -1,9 +1,4 @@
 <?php
-/**
- * This class handles doing all the checks required for setting up a Schematic command.
- *
- * @author Andre Figueira <andre.figueira@me.com>
- */
 
 namespace Library\Helpers;
 
@@ -12,6 +7,13 @@ use Library\Updater\SchematicUpdater;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class SchematicHelper
+ *
+ * This class handles doing all the checks required for setting up a Schematic command.
+ *
+ * @package Library\Helpers
+ */
 class SchematicHelper
 {
     /**

@@ -1,37 +1,49 @@
 <?php
-/**
- * The schematic file generator creates a file.
- *
- * @author Andre Figueira <andre.figueira@me.com>
- */
 
 namespace Library\Migrations;
 
+/**
+ * The schematic file generator creates a file.
+ *
+ * Class SchematicFileGenerator
+ * @package Library\Migrations
+ */
 class SchematicFileGenerator
 {
-    /** @var string The name of the file to generate */
+    /**
+     * @var string The name of the file to generate
+     */
     protected $name;
 
-    /** @var string The directory to create the file in */
+    /**
+     * @var string The directory to create the file in
+     */
     protected $directory;
 
-    /** @var string The schema file to be created */
+    /**
+     * @var string The schema file to be created
+     */
     protected $schemaFile;
 
-    /** @var string The format type to use */
+    /**
+     * @var string The format type to use
+     */
     protected $formatType;
 
-    /** @var string The name to use for the database */
+    /**
+     * @var string The name to use for the database
+     */
     protected $databaseName;
 
-    /** @var string The name to use for the table */
+    /**
+     * @var string The name to use for the table
+     */
     protected $tableName;
 
     /**
      * Setter for the format type.
      *
      * @param $formatType
-     *
      * @return $this
      */
     public function setFileFormatType($formatType)
@@ -45,7 +57,6 @@ class SchematicFileGenerator
      * The setter for the directory.
      *
      * @param $directory
-     *
      * @return $this
      */
     public function setDirectory($directory)
@@ -59,7 +70,6 @@ class SchematicFileGenerator
      * The setter for the file name.
      *
      * @param $name
-     *
      * @return $this
      */
     public function setName($name)
@@ -71,7 +81,6 @@ class SchematicFileGenerator
 
     /**
      * @param string $databaseName
-     *
      * @return $this
      */
     public function setDatabaseName($databaseName)

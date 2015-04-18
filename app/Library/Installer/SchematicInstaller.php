@@ -1,9 +1,4 @@
 <?php
-/**
- * The Schematic installer handles the initialization of Schematic for the project.
- *
- * @author Andre Figueira <andre.figueira@me.com>
- */
 
 namespace Library\Installer;
 
@@ -11,6 +6,13 @@ use Library\Migrations\Configurations;
 use Library\Migrations\FileApi\FileGeneratorInferface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class SchematicInstaller
+ *
+ * The Schematic installer handles the initialization of Schematic for the project.
+ *
+ * @package Library\Installer
+ */
 class SchematicInstaller
 {
     /** @var string The file format type to use */

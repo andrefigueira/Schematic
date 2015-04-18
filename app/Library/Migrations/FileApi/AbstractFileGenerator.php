@@ -21,7 +21,6 @@ abstract class AbstractFileGenerator
      * Sets the create file directory.
      *
      * @param $directory
-     *
      * @return $this
      */
     public function setDirectory($directory)
@@ -35,7 +34,6 @@ abstract class AbstractFileGenerator
      * Sets the database name.
      *
      * @param $dbName
-     *
      * @return $this
      */
     public function setDbName($dbName)
@@ -49,7 +47,6 @@ abstract class AbstractFileGenerator
      * Sets the database variables.
      *
      * @param $variables
-     *
      * @return $this
      */
     public function setDatabaseVariables($variables)

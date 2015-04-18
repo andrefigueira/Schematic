@@ -5,10 +5,18 @@ namespace Library\Migrations;
 use Library\Database\Adapters\Mysql\Adapter;
 use Library\Helpers\SchematicHelper;
 
+/**
+ * Class SchematicMappingImport
+ * @package Library\Migrations
+ */
 class SchematicMappingImport extends AbstractSchematic
 {
+
     /**
      * Runs the application, sets the environment configs based on the environment and runs the mapper and generator.
+     *
+     * @throws \Exception
+     * @throws \Library\Database\Adapters\Mysql\Exception
      */
     public function run()
     {

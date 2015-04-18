@@ -12,6 +12,10 @@ use Library\Migrations\FileApi\AbstractFileGenerator;
 use Library\Migrations\FileApi\FileGeneratorInferface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class JsonAdapter
+ * @package Library\Migrations\FileApi\Adapters
+ */
 class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferface
 {
     /** @var string Filename of the file we are attempting to create */
@@ -32,9 +36,7 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      * Maps and generates the schema file.
      *
      * @param $data
-     *
      * @throws \Exception
-     *
      * @return bool
      */
     public function mapAndGenerateSchema($data)
@@ -55,7 +57,6 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      *
      * @param $table
      * @param $fields
-     *
      * @return array
      */
     private function mapToFormat($table, $fields)
@@ -174,9 +175,7 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      * Converts raw data to an object.
      *
      * @param $data
-     *
      * @return mixed|void
-     *
      * @throws \Exception
      */
     public function convertToObject($data)
@@ -194,9 +193,7 @@ class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      * Converts the created content to the correct format and returns the result.
      *
      * @param $content
-     *
      * @return mixed|void
-     *
      * @throws \Exception
      */
     public function convertToFormat($content)

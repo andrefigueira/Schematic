@@ -5,18 +5,40 @@ namespace Library\Database\Adapters\Mysql;
 use Library\Database\Adapters\Interfaces\AdapterInterface;
 use Library\Database\Adapters\Interfaces\FieldInterface;
 
+/**
+ * Class Field
+ * @package Library\Database\Adapters\Mysql
+ */
 class Field implements FieldInterface
 {
+    /**
+     * @var string
+     */
     protected $name;
 
+    /**
+     * @var string
+     */
     protected $properties;
 
+    /**
+     * @var string
+     */
     protected $databaseProperties;
 
+    /**
+     * @var string
+     */
     protected $databaseName;
 
+    /**
+     * @var string
+     */
     protected $tableName;
 
+    /**
+     * @var array
+     */
     protected $propertyModifications = array();
 
     public function __construct(AdapterInterface $adapter)
@@ -24,6 +46,10 @@ class Field implements FieldInterface
         $this->adapter = $adapter;
     }
 
+    /**
+     * @param $name
+     * @return $this
+     */
     public function setName($name)
     {
         $this->name = $name;
@@ -31,6 +57,18 @@ class Field implements FieldInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param $properties
+     * @return $this
+     */
     public function setProperties($properties)
     {
         $this->properties = $properties;
@@ -38,6 +76,18 @@ class Field implements FieldInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getProperties()
+    {
+        return $this->properties;
+    }
+
+    /**
+     * @param $databaseName
+     * @return $this
+     */
     public function setDatabaseName($databaseName)
     {
         $this->databaseName = $databaseName;
@@ -45,6 +95,18 @@ class Field implements FieldInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getDatabaseName()
+    {
+        return $this->databaseName;
+    }
+
+    /**
+     * @param $tableName
+     * @return $this
+     */
     public function setTableName($tableName)
     {
         $this->tableName = $tableName;
@@ -52,6 +114,17 @@ class Field implements FieldInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getTableName()
+    {
+        return $this->tableName;
+    }
+
+    /**
+     * @return void
+     */
     private function prepareProperties()
     {
         foreach ($this->properties as $key => $value) {
@@ -75,6 +148,10 @@ class Field implements FieldInterface
         }
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function create()
     {
         $this->prepareProperties();
@@ -90,6 +167,10 @@ class Field implements FieldInterface
         }
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function exists()
     {
         $stmt = $this->adapter->db->prepare('
@@ -107,6 +188,10 @@ class Field implements FieldInterface
         }
     }
 
+    /**
+     * @return \stdClass
+     * @throws \Exception
+     */
     protected function fetchProperties()
     {
         $stmt = $this->adapter->db->prepare('
@@ -149,6 +234,10 @@ class Field implements FieldInterface
         }
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function modified()
     {
         $modified = false;
@@ -177,6 +266,10 @@ class Field implements FieldInterface
         return $modified;
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function update()
     {
         $this->prepareProperties();
@@ -192,13 +285,13 @@ class Field implements FieldInterface
 
             $this->setName($existingName);
 
-            $sql = 'ALTER TABLE '.$this->tableName.' CHANGE COLUMN `'.$this->name.'` `'.$this->properties->rename.'` '.$this->properties->type.' '.(isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '').';';
+            $sql = 'ALTER TABLE `' . $this->tableName . '` CHANGE COLUMN `' . $this->name . '` `' . $this->properties->rename . '` ' . $this->properties->type . ' ' . (isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '') . ';';
         } else {
             if (isset($this->properties->index) && $this->indexExists() === false) {
                 $this->createIndex($this->properties->index);
             }
 
-            $sql = 'ALTER TABLE '.$this->tableName.' MODIFY COLUMN '.$this->name.' '.$this->properties->type.' '.(isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '').';';
+            $sql = 'ALTER TABLE `' . $this->tableName . '` MODIFY COLUMN `' . $this->name . '` ' . $this->properties->type . ' ' . (isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '') . ';';
         }
 
         $query = $this->adapter->db->query($sql);
@@ -214,6 +307,9 @@ class Field implements FieldInterface
         }
     }
 
+    /**
+     * @return array
+     */
     protected function validIndexTypes()
     {
         return array(
@@ -223,11 +319,19 @@ class Field implements FieldInterface
         );
     }
 
+    /**
+     * @param $type
+     * @return bool
+     */
     protected function isValidIndex($type)
     {
         return in_array($type, $this->validIndexTypes());
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     protected function indexExists()
     {
         $stmt = $this->adapter->db->prepare('
@@ -245,6 +349,11 @@ class Field implements FieldInterface
         }
     }
 
+    /**
+     * @param $type
+     * @return bool
+     * @throws \Exception
+     */
     protected function createIndex($type)
     {
         if (!$this->isValidIndex($type)) {
@@ -254,9 +363,11 @@ class Field implements FieldInterface
             throw new \Exception('Unable to create index, one already exists');
         }
 
-        $query = $this->adapter->db->query('
-        ALTER TABLE '.$this->tableName.' ADD '.$type.' '.$this->name.' ('.$this->name.');
-        ');
+        $sql = '
+        ALTER TABLE `' . $this->tableName . '` ADD ' . $type . ' `' . $this->name . '` (`' . $this->name . '`);
+        ';
+
+        $query = $this->adapter->db->query($sql);
 
         if ($query) {
             return true;
@@ -265,11 +376,48 @@ class Field implements FieldInterface
         }
     }
 
-    protected function relationExists()
+    public function relationSettingExists()
     {
+        return isset($this->getProperties()->foreignKey);
     }
 
-    protected function createRelation($relatedTable, $relatedField)
+    public function relationExists()
     {
+        $constraintSettings = $this->getProperties()->foreignKey;
+
+        $sql = '
+        SELECT *
+        FROM information_schema.TABLE_CONSTRAINTS
+        LEFT JOIN information_schema.KEY_COLUMN_USAGE
+        ON information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME = information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME
+        WHERE information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE = "FOREIGN KEY"
+        AND information_schema.TABLE_CONSTRAINTS.CONSTRAINT_SCHEMA = "' . $this->getDatabaseName() . '"
+        AND information_schema.KEY_COLUMN_USAGE.CONSTRAINT_SCHEMA = "' . $this->getDatabaseName() . '"
+        AND information_schema.TABLE_CONSTRAINTS.TABLE_NAME = "' . $this->getTableName() . '"
+        AND information_schema.KEY_COLUMN_USAGE.REFERENCED_TABLE_NAME = "' . $constraintSettings->table . '"
+        AND information_schema.KEY_COLUMN_USAGE.REFERENCED_COLUMN_NAME = "' . $constraintSettings->field . '"
+        ';
+
+        $statement = $this->adapter->db->prepare($sql);
+
+        if ($statement->execute()) {
+            return (bool) $statement->rowCount();
+        } else {
+            throw new \Exception('Unable to check for foreign keys');
+        }
+    }
+
+    public function createRelation()
+    {
+        $constraintSettings = $this->getProperties()->foreignKey;
+
+        $sql = '
+        ALTER TABLE `' . $this->getTableName() . '` add CONSTRAINT FOREIGN KEY (`' . $this->name . '`)
+        REFERENCES `' . $constraintSettings->table . '` (`' . $constraintSettings->field . '`) ON UPDATE ' . $constraintSettings->on->update . ' ON DELETE ' . $constraintSettings->on->delete . ';
+        ';
+
+        $query = $this->adapter->db->query($sql);
+
+        return $query;
     }
 }

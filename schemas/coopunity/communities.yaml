@@ -4,8 +4,8 @@ schematic:
 database:
     general:
         name: coopunity
-        charset: utf8
-        collation: utf8_general_ci
+        charset: latin1
+        collation: latin1_swedish_ci
         engine: InnoDB
     tables:
         communities:
@@ -16,17 +16,17 @@ database:
                     unsigned: true
                     autoIncrement: true
                     index: 'PRIMARY KEY'
-                name:
-                    type: varchar(128)
-                    'null': false
-                    unsigned: false
-                    autoIncrement: false
                 permalink:
                     type: varchar(128)
                     'null': false
                     unsigned: false
                     autoIncrement: false
                     index: INDEX
+                name:
+                    type: varchar(128)
+                    'null': false
+                    unsigned: false
+                    autoIncrement: false
                 description:
                     type: varchar(256)
                     'null': false

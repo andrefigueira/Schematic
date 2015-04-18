@@ -11,31 +11,49 @@ namespace Library\Migrations;
 
 class Schematic extends AbstractSchematic
 {
-    /** @var string The base directory for the schematic install */
+    /**
+     * @var string The base directory for the schematic install
+     */
     protected $baseDir = '';
 
-    /** @var The property which contains information of the schema */
+    /**
+     * @var object The property which contains information of the schema
+     */
     protected $schema;
 
-    /** @var string The directory for the tables */
+    /**
+     * @var string The directory for the tables
+     */
     protected $tableDir = '';
 
-    /** @var string The generated schema SQL */
+    /**
+     * @var string The generated schema SQL
+     */
     protected $sql = '';
 
-    /** @var string The default directory for the generated SQL */
+    /**
+     * @var string The default directory for the generated SQL
+     */
     protected $sqlDir = './sql/';
 
-    /** @var string The real directory for the schema files */
+    /**
+     * @var string The real directory for the schema files
+     */
     protected $realSchemaDir = '';
 
-    /** @var string The name of the schema file to load up */
+    /**
+     * @var string The name of the schema file to load up
+     */
     protected $schemaFile = '';
 
-    /** @var string The db name */
+    /**
+     * @var string The db name
+     */
     protected $db;
 
-    /** @var DatabaseInterface The Database adapter currently in use */
+    /**
+     * @var DatabaseInterface The Database adapter currently in use
+     */
     protected $dbAdapter;
 
     /**
@@ -101,7 +119,6 @@ class Schematic extends AbstractSchematic
      * Runs a query to create the database if it does not yet exist.
      *
      * @return bool
-     *
      * @throws \Exception
      */
     private function createDb()
@@ -137,7 +154,6 @@ class Schematic extends AbstractSchematic
      * Checks to see if the directory is empty.
      *
      * @param $dir
-     *
      * @return bool|null
      */
     private function isEmptyDir($dir)
