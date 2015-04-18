@@ -80,7 +80,7 @@ class Field implements FieldInterface
         $this->prepareProperties();
 
         $query = $this->adapter->db->query('
-        ALTER TABLE '.$this->tableName.' ADD '.$this->name.' '.$this->properties->type.' '.(isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '').';
+        ALTER TABLE `' . $this->tableName . '` ADD `' . $this->name . '` ' . $this->properties->type . ' ' . (isset($this->properties->autoIncrement) ? $this->properties->autoIncrement : '') . ';
         ');
 
         if ($query) {

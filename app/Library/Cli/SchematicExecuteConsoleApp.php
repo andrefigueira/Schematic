@@ -51,7 +51,6 @@ class SchematicExecuteConsoleApp extends Command
 
         $directory = $config['directory'];
         $fileType = $config['fileType'];
-        $database = $config['driver'];
 
         $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\'.ucfirst($fileType).'Adapter';
 

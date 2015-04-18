@@ -2,7 +2,6 @@
 
 namespace Library\Cli;
 
-use Library\Database\Adapters\Mysql\Adapter;
 use Library\Helpers\SchematicHelper;
 use Library\Logger\Log;
 use Library\Migrations\SchematicMappingImport;
@@ -57,9 +56,7 @@ class SchematicMappingImportConsoleApp extends Command
 
         $directory = $config['directory'];
         $fileType = $config['fileType'];
-        $database = $config['driver'];
 
-        $databaseAdapterClass = '\Library\Database\Adapters\\' . ucfirst($database) . '\Adapter';
         $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
 
         $output->writeln('<info>Beginning database mapping</info>');

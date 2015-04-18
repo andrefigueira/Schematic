@@ -71,12 +71,12 @@ abstract class AbstractFileGenerator
     {
         $this->createDatabaseFolder();
 
-        $newFileName = $this->directory.$this->dbName.'/'.$name;
+        $newFileName = $this->directory . $this->dbName . '/' . $name;
 
         if (@file_put_contents($newFileName, $data)) {
             return true;
         } else {
-            throw new \Exception('Unable to create new schema file: '.$name.' in directory: '.$this->directory);
+            throw new \Exception('Unable to create new schema file: ' . $name . ' in directory: ' . $this->directory);
         }
     }
 

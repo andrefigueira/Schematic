@@ -2,6 +2,7 @@
 
 namespace Library\Migrations;
 
+use Library\Database\Adapters\Mysql\Adapter;
 use Library\Helpers\SchematicHelper;
 
 class SchematicMappingImport extends AbstractSchematic
@@ -11,7 +12,21 @@ class SchematicMappingImport extends AbstractSchematic
      */
     public function run()
     {
+        $adapter = new Adapter($this->database);
+        $adapter
+            ->setHost($this->environmentConfigs->host)
+            ->setUser($this->environmentConfigs->user)
+            ->setPass($this->environmentConfigs->pass)
+            ->connect()
+            ->useDatabase($adapter->getDatabaseName())
+        ;
 
+        $this->fileGenerator
+            ->setDirectory($this->directory)
+            ->setDbName($this->database)
+            ->setDatabaseVariables($adapter->fetchDatabaseVariables())
+            ->mapAndGenerateSchema($adapter->mapDatabase())
+        ;
 
         SchematicHelper::writeln('<info>Mapping of (</info>' . $this->database . '<info>) is complete</info>');
     }

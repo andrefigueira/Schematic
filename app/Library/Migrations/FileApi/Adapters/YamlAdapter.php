@@ -1,19 +1,17 @@
 <?php
-/**
- * This class is a Json adapter is extends the abstract file generator and impliments the file generator interface,
- * It's used to map data from an object to a standard Schematic format so that it can be imported also.
- *
- * @author Andre Figueira <andre.figueira@me.com>
- */
 
 namespace Library\Migrations\FileApi\Adapters;
 
+use Library\Helpers\SchematicHelper;
 use Library\Migrations\FileApi\AbstractFileGenerator;
 use Library\Migrations\FileApi\FileGeneratorInferface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Dumper;
 use Symfony\Component\Yaml\Parser;
 
+/**
+ * Class YamlAdapter
+ * @package Library\Migrations\FileApi\Adapters
+ */
 class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferface
 {
     /** @var string Filename of the file we are attempting to create */
@@ -22,21 +20,11 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
     /** @var string The extension of the file to be generated */
     protected $fileExtension = '.yaml';
 
-    /** @var object The instance of the output interface */
-    protected $output;
-
-    public function __construct(OutputInterface $outputInterface)
-    {
-        $this->output = $outputInterface;
-    }
-
     /**
      * Maps and generates the schema file.
      *
      * @param $data
-     *
      * @throws \Exception
-     *
      * @return bool
      */
     public function mapAndGenerateSchema($data)
@@ -47,7 +35,7 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
             $fileContent = $this->convertToFormat($this->mapToFormat($table, $fields));
 
             if ($this->create($fileName, $fileContent)) {
-                $this->output->writeln('<info>Created schema file</info> ' . $fileName);
+                SchematicHelper::writeln('<info>Created schema file</info> ' . $fileName);
             }
         }
     }
@@ -84,7 +72,7 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
             }
 
             //Check if allows null and set it
-            if ($fieldAttributes->null == 'NO') {
+            if ($fieldAttributes->Null == 'NO') {
                 $null = false;
             } else {
                 $null = true;
@@ -172,6 +160,10 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
         return $format;
     }
 
+    /**
+     * @param $data
+     * @return mixed
+     */
     public function convertToObject($data)
     {
         $yaml = new Parser();
@@ -187,9 +179,7 @@ class YamlAdapter extends AbstractFileGenerator implements FileGeneratorInferfac
      * Converts the created content to the correct format and returns the result.
      *
      * @param $content
-     *
      * @return mixed|void
-     *
      * @throws \Exception
      */
     public function convertToFormat($content)

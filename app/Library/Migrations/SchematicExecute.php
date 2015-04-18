@@ -29,14 +29,17 @@ class SchematicExecute extends AbstractSchematic
         $adapter
             ->setHost($this->environmentConfigs->host)
             ->setUser($this->environmentConfigs->user)
-            ->setPass($this->environmentConfigs->pass);
+            ->setPass($this->environmentConfigs->pass)
+            ->connect()
+        ;
 
         $database = new Database($adapter);
         $database
             ->setName($this->schema->database->general->name)
             ->setCharset($this->schema->database->general->charset)
             ->setCollation($this->schema->database->general->collation)
-            ->setEngine($this->schema->database->general->engine);
+            ->setEngine($this->schema->database->general->engine)
+        ;
 
         try {
             if ($database->exists()) {
@@ -50,10 +53,12 @@ class SchematicExecute extends AbstractSchematic
                     SchematicHelper::writeln('<info>Database unchanged</info>');
                 }
             } else {
-                SchematicHelper::writeln('<comment>Database does not exist, creating is now...</comment>');
+                SchematicHelper::writeln('<comment>Database does not exist, creating it now...</comment>');
 
                 $database->create();
             }
+
+            $adapter->useDatabase($database->getName());
 
             SchematicHelper::writeln('<bg=green;fg=black;>Database checks completed successfully!</bg=green;fg=black;>');
             SchematicHelper::writeln('<info>Starting table checks</info>');

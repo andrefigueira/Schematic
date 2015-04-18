@@ -32,6 +32,11 @@ class Database implements DatabaseInterface
         return $this;
     }
 
+    public function getName()
+    {
+        return $this->name;
+    }
+
     public function setCharset($charset)
     {
         $this->charset = $charset;

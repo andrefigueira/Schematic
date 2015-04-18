@@ -1,0 +1,60 @@
+schematic:
+    name: Schematic
+    version: 1.5.0
+database:
+    general:
+        name: coopunity
+        charset: utf8
+        collation: utf8_general_ci
+        engine: InnoDB
+    tables:
+        notifications:
+            fields:
+                id:
+                    type: int(11)
+                    'null': false
+                    unsigned: true
+                    autoIncrement: true
+                    index: 'PRIMARY KEY'
+                users_id:
+                    type: int(11)
+                    'null': false
+                    unsigned: true
+                    autoIncrement: false
+                    index: INDEX
+                    foreignKey:
+                        table: users
+                        field: id
+                        'on':
+                            delete: CASCADE
+                            update: CASCADE
+                related_id:
+                    type: int(11)
+                    'null': false
+                    unsigned: true
+                    autoIncrement: false
+                related_subject_id:
+                    type: int(11)
+                    'null': true
+                    unsigned: true
+                    autoIncrement: false
+                type:
+                    type: 'enum(''comment'',''post'')'
+                    'null': true
+                    unsigned: false
+                    autoIncrement: false
+                content:
+                    type: varchar(256)
+                    'null': false
+                    unsigned: false
+                    autoIncrement: false
+                read:
+                    type: tinyint(4)
+                    'null': false
+                    unsigned: false
+                    autoIncrement: false
+                date:
+                    type: datetime
+                    'null': false
+                    unsigned: false
+                    autoIncrement: false
