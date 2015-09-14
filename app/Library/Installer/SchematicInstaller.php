@@ -1,16 +1,18 @@
 <?php
 
-/**
- * The Schematic installer handles the initialization of Schematic for the project.
- *
- * @author Andre Figueira <andre.figueira@me.com>
- */
 namespace Library\Installer;
 
 use Library\Migrations\Configurations;
 use Library\Migrations\FileApi\FileGeneratorInferface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class SchematicInstaller
+ *
+ * The Schematic installer handles the initialization of Schematic for the project.
+ *
+ * @package Library\Installer
+ */
 class SchematicInstaller
 {
     /** @var string The file format type to use */
@@ -31,7 +33,7 @@ class SchematicInstaller
     {
         return $this->fileAdapter->convertToFormat(array(
             'driver' => Configurations::CONFIG_DEFAULT_DRIVER,
-            'directory' => $_SERVER['PWD'].'/'.Configurations::CONFIG_SCHEMA_FOLDER_NAME.'/',
+            'directory' =>  $_SERVER['PWD'].'/'.Configurations::CONFIG_SCHEMA_FOLDER_NAME.'/',
             'environments' => array(
                 'localhost' => array(
                     'host' => '127.0.0.1',

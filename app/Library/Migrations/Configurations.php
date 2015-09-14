@@ -1,12 +1,16 @@
 <?php
-
 /**
  * This class handles the configurations for the Schematic setup, checks the file types and loads config data.
  */
+
 namespace Library\Migrations;
 
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class Configurations
+ * @package Library\Migrations
+ */
 class Configurations
 {
     /** @var bool The file type being used */
@@ -55,7 +59,7 @@ class Configurations
      */
     private function getConfigFileType()
     {
-        foreach (self::allowedConfigurationFileTypes() as $allowedFileType) {
+        foreach (Configurations::allowedConfigurationFileTypes() as $allowedFileType) {
             $fileToCheckFor = self::CONFIG_FILE_NAME.'.'.$allowedFileType;
 
             if (file_exists($fileToCheckFor)) {

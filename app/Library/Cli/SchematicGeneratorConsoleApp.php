@@ -53,7 +53,7 @@ class SchematicGeneratorConsoleApp extends Command
         $question = new Question('<fg=blue>Please enter a table name:</fg=blue> ');
         $tableName = $helper->ask($input, $output, $question);
 
-        $output->writeln('<info>Table name:</info> ' . $tableName);
+        $output->writeln('<info>Table name:</info> '.$tableName);
 
         $schematicFileGenerator = new SchematicFileGenerator();
         $schematicFileGenerator

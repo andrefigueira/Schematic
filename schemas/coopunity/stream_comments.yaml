@@ -1,0 +1,52 @@
+schematic:
+    name: Schematic
+    version: 1.5.0
+database:
+    general:
+        name: coopunity
+        charset: latin1
+        collation: latin1_swedish_ci
+        engine: InnoDB
+    tables:
+        stream_comments:
+            fields:
+                id:
+                    type: int(11)
+                    'null': false
+                    unsigned: true
+                    autoIncrement: true
+                    index: 'PRIMARY KEY'
+                stream_id:
+                    type: int(11)
+                    'null': false
+                    unsigned: true
+                    autoIncrement: false
+                    index: INDEX
+                    foreignKey:
+                        table: stream
+                        field: id
+                        'on':
+                            delete: CASCADE
+                            update: CASCADE
+                users_id:
+                    type: int(11)
+                    'null': false
+                    unsigned: true
+                    autoIncrement: false
+                    index: INDEX
+                    foreignKey:
+                        table: users
+                        field: id
+                        'on':
+                            delete: CASCADE
+                            update: CASCADE
+                comment:
+                    type: varchar(1024)
+                    'null': false
+                    unsigned: false
+                    autoIncrement: false
+                date:
+                    type: datetime
+                    'null': false
+                    unsigned: false
+                    autoIncrement: false

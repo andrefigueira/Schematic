@@ -4,20 +4,21 @@ namespace Library\Cli;
 
 use Library\Helpers\SchematicHelper;
 use Library\Logger\Log;
-use Library\Migrations\SchematicMappingImport;
+use Library\Migrations\Schematic;
+use Library\Migrations\SchematicExecute;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SchematicMappingImportConsoleApp extends Command
+class SchematicExecuteConsoleApp extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('migrations:mapping')
-            ->setDescription('Generates the database schema based on an existing database')
+            ->setName('migrations:execute')
+            ->setDescription('Executes the database migration based on the schema files')
             ->addOption(
                 'dir',
                 'd',
@@ -35,18 +36,12 @@ class SchematicMappingImportConsoleApp extends Command
                 InputArgument::REQUIRED,
                 'What is the environment?'
             )
-            ->addArgument(
-                'db',
-                InputArgument::REQUIRED,
-                'Which database do you want to construct?'
-            )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $environment = $input->getArgument('env');
-        $dbName = $input->getArgument('db');
 
         $config = SchematicHelper::init($output, array(
             'fileType' => $input->getOption('fileType'),
@@ -57,11 +52,9 @@ class SchematicMappingImportConsoleApp extends Command
         $directory = $config['directory'];
         $fileType = $config['fileType'];
 
-        $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($fileType) . 'Adapter';
+        $fileAdapterClass = '\Library\Migrations\FileApi\Adapters\\'.ucfirst($fileType).'Adapter';
 
-        $output->writeln('<info>Beginning database mapping</info>');
-
-        $schematic = new SchematicMappingImport(
+        $schematic = new SchematicExecute(
             new Log(),
             new $fileAdapterClass($output)
         );
@@ -69,9 +62,7 @@ class SchematicMappingImportConsoleApp extends Command
         $schematic
             ->setFileFormatType($fileType)
             ->setDirectory($directory)
-            ->setDatabase($dbName)
             ->setEnvironmentConfigs($config['environmentConfigs'])
-            ->run()
-        ;
+            ->run();
     }
 }

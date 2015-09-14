@@ -12,6 +12,10 @@ use Library\Migrations\FileApi\AbstractFileGenerator;
 use Library\Migrations\FileApi\FileGeneratorInferface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class JsonAdapter
+ * @package Library\Migrations\FileApi\Adapters
+ */
 class JsonAdapter extends AbstractFileGenerator implements FileGeneratorInferface
 {
     /** @var string Filename of the file we are attempting to create */

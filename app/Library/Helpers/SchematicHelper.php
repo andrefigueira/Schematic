@@ -4,6 +4,7 @@ namespace Library\Helpers;
 
 use Library\Migrations\Configurations;
 use Library\Updater\SchematicUpdater;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -12,19 +13,21 @@ use Symfony\Component\Console\Output\OutputInterface;
  * This class handles doing all the checks required for setting up a Schematic command.
  *
  * @package Library\Helpers
- * @author Andre Figueira <andre.figueira@me.com>
  */
 class SchematicHelper
 {
     /**
      * This class handles the checks which are done for setting up a Schematic command.
      *
+     * @param OutputInterface $outputInterface
      * @param $params
+     *
      * @return array
+     *
      * @throws \Exception
      */
-    public static function init($params, $di)
-	{
+    public static function init(OutputInterface $outputInterface, $params)
+    {
         if (!isset($params['fileType'])) {
             $params['fileType'] = false;
         }
@@ -34,8 +37,6 @@ class SchematicHelper
         if (!isset($params['environment'])) {
             $params['environment'] = false;
         }
-
-		$outputInterface = $di->get('output');
 
         $updater = new SchematicUpdater($outputInterface);
 
@@ -92,5 +93,18 @@ class SchematicHelper
         );
 
         return $results;
+    }
+
+    public static function underscoreToCamelCase($string)
+    {
+        $func = create_function('$c', 'return strtoupper($c[1]);');
+
+        return preg_replace_callback('/_([a-z])/', $func, $string);
+    }
+
+    public static function writeln($messages, $type = ConsoleOutput::OUTPUT_NORMAL)
+    {
+        $output = new ConsoleOutput();
+        $output->writeln($messages, $type);
     }
 }

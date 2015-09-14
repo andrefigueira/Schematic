@@ -2,6 +2,10 @@
 
 namespace Library\Migrations\FileApi;
 
+/**
+ * Class AbstractFileGenerator
+ * @package Library\Migrations\FileApi
+ */
 abstract class AbstractFileGenerator
 {
     /** @var string The directory where the created file will be */
@@ -17,7 +21,6 @@ abstract class AbstractFileGenerator
      * Sets the create file directory.
      *
      * @param $directory
-     *
      * @return $this
      */
     public function setDirectory($directory)
@@ -31,7 +34,6 @@ abstract class AbstractFileGenerator
      * Sets the database name.
      *
      * @param $dbName
-     *
      * @return $this
      */
     public function setDbName($dbName)
@@ -45,7 +47,6 @@ abstract class AbstractFileGenerator
      * Sets the database variables.
      *
      * @param $variables
-     *
      * @return $this
      */
     public function setDatabaseVariables($variables)
@@ -56,26 +57,32 @@ abstract class AbstractFileGenerator
     }
 
     /**
-     * Creates a new file with the data provided.
+     * Create a new file with the data provided
      *
      * @param $name
      * @param $data
-     *
+     * @return bool
      * @throws \Exception
      */
     public function create($name, $data)
     {
         $this->createDatabaseFolder();
 
-        $newFileName = $this->directory.$this->dbName.'/'.$name;
+        $newFileName = $this->directory . $this->dbName . '/' . $name;
 
         if (@file_put_contents($newFileName, $data)) {
             return true;
         } else {
-            throw new \Exception('Unable to create new schema file: '.$name.' in directory: '.$this->directory);
+            throw new \Exception('Unable to create new schema file: ' . $name . ' in directory: ' . $this->directory);
         }
     }
 
+    /**
+     * Create the database folder
+     *
+     * @return bool
+     * @throws \Exception
+     */
     public function createDatabaseFolder()
     {
         $dir = $this->directory.$this->dbName;
@@ -84,7 +91,7 @@ abstract class AbstractFileGenerator
             if (@mkdir($dir)) {
                 return true;
             } else {
-                throw new \Exception('Unable to create database folder ('.$dir.') in schemas folder ('.error_get_last()['message'].'), check permissions...');
+                throw new \Exception('Unable to create database folder in schemas folder, check permissions...');
             }
         }
     }

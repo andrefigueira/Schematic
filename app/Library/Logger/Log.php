@@ -1,16 +1,29 @@
 <?php
 
-/**
- * The schematic log is simple used to create log files for the schematic functions.
- */
 namespace Library\Logger;
 
+/**
+ * Class Log
+ *
+ * The schematic log is simple used to create log files for the schematic functions.
+ *
+ * @package Library\Logger
+ */
 class Log implements LogInterface
 {
+    /**
+     * @var string
+     */
     protected $dir = './logs/';
 
+    /**
+     * @var string
+     */
     protected $file = 'sql-changes.log';
 
+    /**
+     * @var string
+     */
     protected $filePath;
 
     /**
@@ -25,7 +38,6 @@ class Log implements LogInterface
      * Checks to see if the log directory exists if not, it creates it.
      *
      * @return bool
-     *
      * @throws \Exception
      */
     public function exists()
@@ -65,9 +77,7 @@ class Log implements LogInterface
      * Write to the log file set in a specific format.
      *
      * @param $message
-     *
      * @return bool
-     *
      * @throws \Exception
      */
     public function write($message)
