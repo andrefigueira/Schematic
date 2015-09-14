@@ -1,17 +1,19 @@
 <?php
-/**
- * This interface defines what should be created in new database adapters
- *
- * @author Andre Figueira <andre.figueira@me.com>
- */
 
 namespace Library\Database;
 
+/**
+ * Interface DatabaseInterface
+ *
+ * This interface defines what should be created in new database adapters.
+ *
+ * @package Library\Database
+ * @author Andre Figueira <andre.figueira@me.com>
+ */
 interface DatabaseInterface
 {
-
     /**
-     * Should set a protected host property
+     * Should set a protected host property.
      *
      * @param $host
      * @return mixed
@@ -19,7 +21,7 @@ interface DatabaseInterface
     public function setHost($host);
 
     /**
-     * Should set a protected username property
+     * Should set a protected username property.
      *
      * @param $username
      * @return mixed
@@ -27,7 +29,7 @@ interface DatabaseInterface
     public function setUsername($username);
 
     /**
-     * Should set a protected username property
+     * Should set a protected username property.
      *
      * @param $password
      * @return mixed
@@ -35,7 +37,7 @@ interface DatabaseInterface
     public function setPassword($password);
 
     /**
-     * Should set a protected dbName property
+     * Should set a protected dbName property.
      *
      * @param $dbName
      * @return mixed
@@ -43,7 +45,7 @@ interface DatabaseInterface
     public function setDbName($dbName);
 
     /**
-     * Should create a new database
+     * Should create a new database.
      *
      * @param $name
      * @return mixed
@@ -51,7 +53,7 @@ interface DatabaseInterface
     public function createDatabase($name);
 
     /**
-     * Should check if a table exists on the database
+     * Should check if a table exists on the database.
      *
      * @param $name
      * @return mixed
@@ -59,7 +61,7 @@ interface DatabaseInterface
     public function tableExists($name);
 
     /**
-     * Should check if a field exists in a table on the database
+     * Should check if a field exists in a table on the database.
      *
      * @param $table
      * @param $name
@@ -68,7 +70,7 @@ interface DatabaseInterface
     public function fieldExists($table, $name);
 
     /**
-     * Should be able to run multiple queries at once
+     * Should be able to run multiple queries at once.
      *
      * @param $query
      * @return mixed
@@ -76,7 +78,7 @@ interface DatabaseInterface
     public function multiQuery($query);
 
     /**
-     * Should be able to run queries on the database
+     * Should be able to run queries on the database.
      *
      * @param $query
      * @return mixed
@@ -84,7 +86,7 @@ interface DatabaseInterface
     public function query($query);
 
     /**
-     * Should fetch fields from table in object format
+     * Should fetch fields from table in object format.
      *
      * @param $table
      * @return mixed
@@ -92,17 +94,16 @@ interface DatabaseInterface
     public function showFields($table);
 
     /**
-     * Should fetch an associative stdObject of a database with tables and fields and those field attributes
+     * Should fetch an associative stdObject of a database with tables and fields and those field attributes.
      *
      * @return mixed
      */
     public function mapDatabase();
 
     /**
-     * Should fetch database variables and return it in key, value standard object
+     * Should fetch database variables and return it in key, value standard object.
      *
      * @return mixed
      */
     public function fetchDatabaseVariables();
-
 }

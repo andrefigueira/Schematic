@@ -1,15 +1,14 @@
 <?php
-/**
- * This class handles the configurations for the Schematic setup, checks the file types and loads config data
- */
 
+/**
+ * This class handles the configurations for the Schematic setup, checks the file types and loads config data.
+ */
 namespace Library\Migrations;
 
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Configurations
 {
-
     /** @var bool The file type being used */
     public $fileType;
 
@@ -33,102 +32,78 @@ class Configurations
     /**
      * The construct expects an output interface so it can print to screen it also runs the getConfigFileType to determine
      * what the file type is on it's own, and after checks if it can fetch configuration information from the config file
-     * if it exists
+     * if it exists.
      *
      * @param OutputInterface $outputInterface
+     *
      * @throws \Exception
      */
     public function __construct(OutputInterface $outputInterface)
     {
-
         $this->output = $outputInterface;
 
         $this->fileType = $this->getConfigFileType();
 
         $this->config = $this->fetchConfigurations();
-
     }
 
     /**
      * Loops through the allowed config file types and checks if any schematic config file exists for the project and it
-     * returns the file type it's found if there is one
+     * returns the file type it's found if there is one.
      *
      * @return bool
      */
     private function getConfigFileType()
     {
+        foreach (self::allowedConfigurationFileTypes() as $allowedFileType) {
+            $fileToCheckFor = self::CONFIG_FILE_NAME.'.'.$allowedFileType;
 
-        foreach(Configurations::allowedConfigurationFileTypes() as $allowedFileType)
-        {
-
-            $fileToCheckFor = self::CONFIG_FILE_NAME . '.' . $allowedFileType;
-
-            if(file_exists($fileToCheckFor))
-            {
-
-                $this->output->writeln('<info>Schematic config files are in ' . $allowedFileType . ' format</info>');
+            if (file_exists($fileToCheckFor)) {
+                $this->output->writeln('<info>Schematic config files are in '.$allowedFileType.' format</info>');
 
                 $this->configFileExists = true;
                 $this->configFilePath = $fileToCheckFor;
 
                 return $allowedFileType;
-
             }
-
         }
 
         return false;
-
     }
 
     /**
      * Uses the RelectionMethod class to try and call a fileApiAdapter class to convert the formatted contents of a configuration
-     * file into a stdObject which we can use
+     * file into a stdObject which we can use.
      *
      * @throws \Exception
      */
     private function fetchConfigurations()
     {
-
-        if($this->configFileExists)
-        {
-
+        if ($this->configFileExists) {
             $contents = @file_get_contents($this->configFilePath);
 
-            if($contents)
-            {
-
-                $adapterClass = '\Library\Migrations\FileApi\Adapters\\' . ucfirst($this->fileType) . 'Adapter';
+            if ($contents) {
+                $adapterClass = '\Library\Migrations\FileApi\Adapters\\'.ucfirst($this->fileType).'Adapter';
 
                 $reflectionMethod = new \ReflectionMethod($adapterClass, 'convertToObject');
 
                 return $reflectionMethod->invokeArgs(new $adapterClass($this->output), array($contents));
-
-            }
-            else
-            {
-
+            } else {
                 throw new \Exception('Failed to fetch contents of config file, reset it as it\'s corrupt');
-
             }
-
         }
-
     }
 
     /**
-     * Returns an array of the allowed configuration file types
+     * Returns an array of the allowed configuration file types.
      *
      * @return array
      */
     public static function allowedConfigurationFileTypes()
     {
-
         return array(
             'json',
-            'yaml'
+            'yaml',
         );
-
     }
-
 }

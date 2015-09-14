@@ -1,7 +1,7 @@
 driver: mysql
-directory: /Users/andre/Projects/Schematic/schemas/
+directory: schemas
 environments:
     localhost:
-        host: 127.0.0.1
+        host: 192.168.50.4
         user: root
         pass: ''

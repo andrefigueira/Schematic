@@ -3,12 +3,12 @@ schematic:
     version: 1.5.0
 database:
     general:
-        name: schematic
+        name: test_db
         charset: utf8
         collation: utf8_general_ci
         engine: InnoDB
     tables:
-        hello_world:
+        users_settings:
             fields:
                 id:
                     type: int(11)
@@ -16,23 +16,17 @@ database:
                     unsigned: true
                     autoIncrement: true
                     index: 'PRIMARY KEY'
-                client_id:
-                    type: int(24)
-                    'null': false
-                    unsigned: true
-                    autoIncrement: false
-                full_name:
+                identifier:
+                    type: enum('normal', 'system')
+                    'null': true
+                    default: normal
+                name:
                     type: varchar(128)
                     'null': false
                     unsigned: false
-                    autoIncrement: false
-                description:
-                    type: varchar(256)
+                value:
+                    type: varchar(128)
                     'null': false
-                    unsigned: false
-                    autoIncrement: false
                 created_date:
                     type: datetime
                     'null': false
-                    unsigned: false
-                    autoIncrement: false

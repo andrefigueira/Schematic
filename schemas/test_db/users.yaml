@@ -1,0 +1,33 @@
+schematic:
+    name: Schematic
+    version: 1.5.0
+database:
+    general:
+        name: test_db
+        charset: latin1
+        collation: latin1_swedish_ci
+        engine: InnoDB
+    tables:
+        users:
+            fields:
+                id:
+                    type: int(12)
+                    'null': false
+                    unsigned: true
+                    autoIncrement: true
+                    index: 'PRIMARY KEY'
+                username:
+                    type: varchar(256)
+                    'null': true
+                    unsigned: false
+                    autoIncrement: false
+                password:
+                    type: varchar(512)
+                    'null': true
+                    unsigned: false
+                    autoIncrement: false
+                date:
+                    type: datetime
+                    'null': true
+                    unsigned: false
+                    autoIncrement: false
