@@ -113,6 +113,8 @@ class Table extends AbstractTable
 
 		$iteration = 0;
 
+		$tableModifications = [];
+
 		foreach ($this->getStructure()['fields'] as $fieldName => $fieldStructure) {
 			$field = new Field();
 
@@ -128,8 +130,8 @@ class Table extends AbstractTable
 			;
 
 			if ($field->save()) {
-				$field->setLastField($field->getName());
-				$output->writeln('<green>Finished updating field</green>');
+				Field::$lastField = $field->getName();
+
 			} else {
 				foreach ($field->getMessages() as $message) {
 					$output->writeln('<error>' . $message['content'] . '</error>');
@@ -139,23 +141,41 @@ class Table extends AbstractTable
 			$iteration++;
 		}
 
-		if ($this->clearUnschemedFields()) {
+		$this->clearUnschemedFields();
 
-		} else {
-			$output->writeln('<error>Failed to delete unschemed fields</error>');
-		}
-
-		$output->writeln('<bg=yellow;fg=black;options=bold>Finished running table synchronisation</>');
+		$output->writeln('<bg=green;fg=black;options=bold>Finished running table synchronisation</>');
 	}
 
 	public function clearUnschemedFields()
 	{
+		$db = $this->getDb();
+		$output = $this->getDi()->get('output');
 		$fields = $this->getStructure()['fields'];
+		$databaseFields = $db->query('describe ' . $this->getName());
 
-		foreach ($databaseFields as $databaseField) {
-			if (!array_key_exists($databaseFieldName, $fields)) {
+		$output->writeln(PHP_EOL . '---- <fg=black;bg=yellow;>Running unschemed field checks...</>' . PHP_EOL);
 
+		if (count($databaseFields) > 0) {
+			foreach ($databaseFields as $databaseField) {
+				$fieldName = $databaseField['Field'];
+
+				if (array_key_exists($fieldName, $fields)) {
+					$output->writeln('<comment>---- Field: (' . $this->getName() . Database::VISUAL_CONNECTOR . $fieldName . ') exists, no change made</comment>');
+				} else {
+					$result = $db->query('ALTER TABLE ' . $this->getName() . ' DROP ' . $fieldName);
+
+					if ($result) {
+						$output->writeln('<comment>---- Field: Removed (' . $fieldName . ') field from (' . $this->getName() . ')</comment>');
+					} else {
+						$output->writeln('<error>---- Field: Failed to remove (' . $fieldName . ') field from (' . $this->getName() . ')</error>');
+					}
+				}
 			}
+		} else {
+			$output->writeln('<error>---- Field: No fields found for table ' . $this->getName() . '</error>');
 		}
+
+		$output->writeln(PHP_EOL . '---- <fg=black;bg=green;>Finished running unschemed fields checks</>' . PHP_EOL);
+
 	}
 }

@@ -19,15 +19,17 @@ class SchematicHelper
     /**
      * This class handles the checks which are done for setting up a Schematic command.
      *
-     * @param OutputInterface $outputInterface
      * @param $params
+     * @param Di $di
      *
      * @return array
      *
      * @throws \Exception
      */
-    public static function init(OutputInterface $outputInterface, $params)
+    public static function init($params, $di)
     {
+		$outputInterface = $di->get('output');
+
         if (!isset($params['fileType'])) {
             $params['fileType'] = false;
         }

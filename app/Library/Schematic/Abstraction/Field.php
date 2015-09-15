@@ -12,7 +12,6 @@ use Library\Schematic\Exceptions\SchematicApplicationException;
  */
 class Field extends AbstractField
 {
-
 	/**
 	 * @var string
 	 */
@@ -33,7 +32,16 @@ class Field extends AbstractField
 	 */
 	protected $structure;
 
+	/**
+	 * @var array
+	 */
+	protected $actions = [];
+
 	const VISUAL_CONNECTOR = '->';
+
+	const UPDATED_ACTION_NAME = 'updated';
+
+	const CREATED_ACTION_NAME = 'created';
 
 	/**
 	 * @return string
@@ -132,8 +140,6 @@ class Field extends AbstractField
 			} else {
 				throw new SchematicApplicationException('Unable to modify field ' . $this->getDatabaseName() . ':' . $this->getTableName() . ':' . $this->getName());
 			}
-
-			Field::$lastField = $this->getName();
 		} else {
 			$output->writeln('<error>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') does not exist</error>');
 
@@ -144,6 +150,8 @@ class Field extends AbstractField
 			}
 		}
 
-		$output->writeln('<info>---- Finished running field synchronisation</info>');
+		$output->writeln(PHP_EOL . '<fg=black;bg=green>---- Finished running field synchronisation</>');
+
+		return true;
 	}
 }

@@ -67,6 +67,10 @@ class SchematicNewConsoleApp extends Command
 			return $output;
 		});
 
+		$di->set('tableHelper', function() {
+			return $this->getHelper('table');
+		});
+
 		$schematicStructure = new SchematicInterpretter();
 		$schematicStructure->setDi($di);
 
@@ -95,6 +99,6 @@ class SchematicNewConsoleApp extends Command
 			$output->writeln('<comment>No databases fetched in structure</comment>');
 		}
 
-		$output->writeln('<bg=green;fg=black;options=bold>Migrations completed</>');
+		$output->writeln(PHP_EOL . '<bg=green;fg=black;options=bold>Migrations completed</>');
 	}
 }

@@ -31,3 +31,8 @@ database:
                     'null': true
                     unsigned: false
                     autoIncrement: false
+                date2:
+                    type: datetime
+                    'null': true
+                    unsigned: false
+                    autoIncrement: false
