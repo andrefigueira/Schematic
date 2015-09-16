@@ -1,6 +1,7 @@
 <?php
 
 namespace Library\Schematic\Abstraction\Core;
+use Library\Schematic\Exceptions\SchematicApplicationException;
 
 /**
  * Class AbstractField
@@ -22,6 +23,12 @@ abstract class AbstractField extends AbstractDatabaseItem
 		return self::$lastField;
 	}
 
+	/**
+	 * Checks if the field exists
+	 *
+	 * @return bool
+	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
+	 */
 	public function exists()
 	{
 		$this->getDb()->query('use ' . $this->getDatabaseName());
@@ -50,6 +57,12 @@ abstract class AbstractField extends AbstractDatabaseItem
 		return (bool) $statement->rowCount();
 	}
 
+	/**
+	 * Updates the field
+	 *
+	 * @return bool
+	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
+	 */
 	public function update()
 	{
 		$structure = $this->getStructure();
@@ -59,7 +72,9 @@ abstract class AbstractField extends AbstractDatabaseItem
 		MODIFY COLUMN ' . $this->getName() . ' ' . $structure['type'] . '
 			' . (isset($structure['null']) && $structure['null'] ? 'NULL' : ' NOT NULL ') . '
 			' . (isset($structure['default']) ? 'DEFAULT "' . $structure['default'] . '"' : '') . '
-			' . (self::$lastField != null ? 'after ' . self::$lastField : '') . ';
+			' . (self::$lastField != null ? 'after ' . self::$lastField : '') . '
+			' . $this->getIndexSql() . '
+			;
 		';
 
 		self::$lastField = $this->getName();
@@ -69,6 +84,12 @@ abstract class AbstractField extends AbstractDatabaseItem
 		return $statement->execute();
 	}
 
+	/**
+	 * Creates the field
+	 *
+	 * @return bool
+	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
+	 */
 	public function create()
 	{
 		$structure = $this->getStructure();
@@ -76,7 +97,10 @@ abstract class AbstractField extends AbstractDatabaseItem
 		$query = '
 		ALTER TABLE ' . $this->getTableName() . '
 		ADD ' . $this->getName() . ' ' . $structure['type'] . '
+			' . (isset($structure['null']) && $structure['null'] ? 'NULL' : ' NOT NULL ') . '
+			' . (isset($structure['default']) ? 'DEFAULT "' . $structure['default'] . '"' : '') . '
 			' . (self::$lastField != null ? 'after ' . self::$lastField : '') . '
+			' . $this->getIndexSql() . '
 		';
 
 		self::$lastField = $this->getName();
@@ -86,4 +110,77 @@ abstract class AbstractField extends AbstractDatabaseItem
 		return $statement->execute();
 	}
 
+	/**
+	 * Specify valid index types
+	 *
+	 * @return array
+	 */
+	protected function validIndexTypes()
+	{
+		return array(
+			'INDEX',
+			'UNIQUE',
+			'PRIMARY KEY',
+			'FULLTEXT',
+		);
+	}
+
+	/**
+	 * Runs a check on index type to check it's valid
+	 *
+	 * @param $type
+	 * @return bool
+	 */
+	protected function isValidIndex($type)
+	{
+		return in_array($type, $this->validIndexTypes());
+	}
+
+	/**
+	 * Checks if the primary key exists on the field
+	 *
+	 * @return bool
+	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
+	 */
+	protected function primaryKeyExists()
+	{
+		$query = '
+		SHOW INDEXES FROM ' . $this->getTableName() . '
+		WHERE Key_name = "PRIMARY"
+		';
+
+		$statement = $this->getDb()->prepare($query);
+
+		if ($statement->execute() === false) {
+			throw new SchematicApplicationException('Failed to check if field (' . $this->getName() . ') if primary key exists');
+		}
+
+		return (bool) $statement->rowCount();
+	}
+
+	/**
+	 * Fetches the SQL for creating indexes
+	 *
+	 * @return string
+	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
+	 */
+	protected function getIndexSql()
+	{
+		$structure = $this->getStructure();
+		$sql = '';
+
+		if (isset($structure['index'])) {
+			$index = $structure['index'];
+
+			if ($this->isValidIndex($index)) {
+				if (($index == 'PRIMARY KEY' && $this->primaryKeyExists() === false) || ($index != 'PRIMARY KEY')) {
+					$sql = ', ADD ' . $index . ' (`' . $this->getName() . '`)';
+				}
+			} else {
+				throw new SchematicApplicationException('Invalid index type: ' . $index);
+			}
+		}
+
+		return $sql;
+	}
 }

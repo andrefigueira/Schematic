@@ -18,21 +18,16 @@ database:
                     index: 'PRIMARY KEY'
                 username:
                     type: varchar(256)
-                    'null': true
+                    'null': false
                     unsigned: false
                     autoIncrement: false
                 password:
                     type: varchar(512)
-                    'null': true
+                    'null': false
                     unsigned: false
                     autoIncrement: false
                 date:
                     type: datetime
-                    'null': true
-                    unsigned: false
-                    autoIncrement: false
-                date2:
-                    type: datetime
-                    'null': true
+                    'null': false
                     unsigned: false
                     autoIncrement: false

@@ -41,7 +41,7 @@ abstract class AbstractTable extends AbstractDatabaseItem
 		$query = '
 		CREATE TABLE `' . $this->getName() . '` (
   			`tmp` int(11) unsigned NOT NULL
-		) ENGINE=' . $this->getEngine() . ' DEFAULT CHARSET=' . $this->getCharset() . ' COLLATION=' . $this->getCollation() . ';
+		) ENGINE=' . $this->getEngine() . ' DEFAULT CHARSET=' . $this->getCharset() . ' COLLATE=' . $this->getCollation() . ';
 		';
 
 		$statement = $this->getDb()->prepare($query);
