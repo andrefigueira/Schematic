@@ -142,11 +142,12 @@ abstract class AbstractField extends AbstractDatabaseItem
 	 * @return bool
 	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
 	 */
-	protected function primaryKeyExists()
+	protected function indexExists()
 	{
 		$query = '
-		SHOW INDEXES FROM ' . $this->getTableName() . '
-		WHERE Key_name = "PRIMARY"
+		SHOW INDEXES
+        FROM ' . $this->getTableName() . '
+        WHERE Column_name = "' . $this->getName() . '"
 		';
 
 		$statement = $this->getDb()->prepare($query);
@@ -173,7 +174,7 @@ abstract class AbstractField extends AbstractDatabaseItem
 			$index = $structure['index'];
 
 			if ($this->isValidIndex($index)) {
-				if (($index == 'PRIMARY KEY' && $this->primaryKeyExists() === false) || ($index != 'PRIMARY KEY')) {
+				if ($this->indexExists() === false) {
 					$sql = ', ADD ' . $index . ' (`' . $this->getName() . '`)';
 				}
 			} else {
