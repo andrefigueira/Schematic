@@ -16,6 +16,17 @@ database:
                     unsigned: true
                     autoIncrement: true
                     index: 'PRIMARY KEY'
+                users_id:
+                    type: int(11)
+                    'null': false
+                    unsigned: true
+                    index: 'INDEX'
+                    foreignKey:
+                        table: users
+                        field: id
+                        on:
+                            delete: 'NO ACTION'
+                            update: 'NO ACTION'
                 identifier:
                     type: enum('normal', 'system')
                     'null': true

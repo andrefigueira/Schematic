@@ -5,6 +5,7 @@ namespace Library\Cli;
 use DI\ContainerBuilder;
 use Library\Helpers\SchematicHelper;
 use Library\Schematic\Abstraction\Database;
+use Library\Schematic\Abstraction\Field;
 use Library\Schematic\Interpretter\SchematicInterpretter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -63,7 +64,13 @@ class SchematicNewConsoleApp extends Command
 				;
 
 				if ($database->save()) {
-					$output->writeln('<green>Finished updating database</green>');
+					$output->writeln(PHP_EOL . '<fg=black;bg=green;>Finished updating database</>');
+
+					if (empty(Field::$foreignKeys)) {
+						$output->writeln('<fg=black;bg=green;>No foreign keys to apply</>');
+					} else {
+						$output->writeln(PHP_EOL . '<fg=black;bg=magenta;>' . count(Field::$foreignKeys) . ' foreign keys from import</>');
+					}
 				} else {
 					foreach ($database->getMessages() as $message) {
 						$output->writeln('<error>' . $message['content'] . '</error>');

@@ -202,5 +202,7 @@ class Database extends AbstractDatabase
 				}
 			}
 		}
+
+		return true;
 	}
 }

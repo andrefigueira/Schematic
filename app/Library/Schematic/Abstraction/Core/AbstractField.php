@@ -1,6 +1,8 @@
 <?php
 
 namespace Library\Schematic\Abstraction\Core;
+use Library\Schematic\Abstraction\Field;
+use Library\Schematic\Abstraction\FieldForeignKeys;
 use Library\Schematic\Exceptions\SchematicApplicationException;
 
 /**
@@ -14,6 +16,11 @@ abstract class AbstractField extends AbstractDatabaseItem
 	 * @var string
 	 */
 	public static $lastField;
+
+	/**
+	 * @var array
+	 */
+	public static $foreignKeys = [];
 
 	/**
 	 * @return string
@@ -81,6 +88,10 @@ abstract class AbstractField extends AbstractDatabaseItem
 
 		$statement = $this->getDb()->prepare($query);
 
+		if (isset($structure['foreignKey'])) {
+			Field::$foreignKeys[] = $structure;
+		}
+
 		return $statement->execute();
 	}
 
@@ -106,6 +117,10 @@ abstract class AbstractField extends AbstractDatabaseItem
 		self::$lastField = $this->getName();
 
 		$statement = $this->getDb()->prepare($query);
+
+		if (isset($structure['foreignKey'])) {
+			Field::$foreignKeys[] = $structure;
+		}
 
 		return $statement->execute();
 	}
