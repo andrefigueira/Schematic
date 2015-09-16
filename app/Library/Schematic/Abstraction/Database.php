@@ -137,6 +137,8 @@ class Database extends AbstractDatabase
 	}
 
 	/**
+	 * Runs the database synchronization
+	 *
 	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
 	 */
 	public function save()

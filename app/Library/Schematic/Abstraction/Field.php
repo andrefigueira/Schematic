@@ -119,6 +119,12 @@ class Field extends AbstractField
 		return $this;
 	}
 
+	/**
+	 * Runs the field synchronization
+	 *
+	 * @return bool
+	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
+	 */
 	public function save()
 	{
 		if ($this->getName() === null) {
