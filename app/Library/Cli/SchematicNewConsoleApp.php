@@ -6,6 +6,7 @@ use DI\ContainerBuilder;
 use Library\Helpers\SchematicHelper;
 use Library\Schematic\Abstraction\Database;
 use Library\Schematic\Abstraction\Field;
+use Library\Schematic\Abstraction\ForeignKeysManager;
 use Library\Schematic\Interpretter\SchematicInterpretter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,6 +16,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SchematicNewConsoleApp extends Command
 {
+	/**
+	 * @var $di \DI\ContainerBuilder;
+	 */
+	protected $di;
+
 	protected function configure()
 	{
 		$this
@@ -66,10 +72,25 @@ class SchematicNewConsoleApp extends Command
 				if ($database->save()) {
 					$output->writeln(PHP_EOL . '<fg=black;bg=green;>Finished updating database</>');
 
-					if (empty(Field::$foreignKeys)) {
+					$foreignKeys = Field::$foreignKeys;
+
+					if (empty($foreignKeys)) {
 						$output->writeln('<fg=black;bg=green;>No foreign keys to apply</>');
 					} else {
-						$output->writeln(PHP_EOL . '<fg=black;bg=magenta;>' . count(Field::$foreignKeys) . ' foreign keys from import</>');
+						$output->writeln(PHP_EOL . '<fg=black;bg=magenta;>' . count($foreignKeys) . ' foreign keys from import</>');
+
+						$foreignKeyManager = new ForeignKeysManager();
+
+						$foreignKeyManager
+							->setDi($di)
+							->setFields($foreignKeys)
+						;
+
+						if ($foreignKeyManager->save()) {
+							$output->writeln(PHP_EOL . '<fg=black;bg=green;>Completed foreign keys synchronization</>');
+						} else {
+							$output->writeln(PHP_EOL . '<error>Failed to apply foreign keys</>');
+						}
 					}
 				} else {
 					foreach ($database->getMessages() as $message) {
