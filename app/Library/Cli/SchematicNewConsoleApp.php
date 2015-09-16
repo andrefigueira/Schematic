@@ -41,9 +41,54 @@ class SchematicNewConsoleApp extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		$environment = $input->getArgument('env');
+		$di = $this->setServices($input, $output);
 
+		$schematicStructure = new SchematicInterpretter();
+		$schematicStructure->setDi($di);
+
+		$databases = $schematicStructure->getDatabases();
+
+		if (count($databases) > 0) {
+			foreach ($databases as $databaseStructure) {
+				$database = new Database();
+
+				$database->setDi($di);
+
+				$database
+					->setName($databaseStructure['database']['general']['name'])
+					->setCharset($databaseStructure['database']['general']['charset'])
+					->setCollation($databaseStructure['database']['general']['collation'])
+					->setEngine($databaseStructure['database']['general']['engine'])
+					->setStructure($databaseStructure['database']['tables'])
+				;
+
+				if ($database->save()) {
+					$output->writeln('<green>Finished updating database</green>');
+				} else {
+					foreach ($database->getMessages() as $message) {
+						$output->writeln('<error>' . $message['content'] . '</error>');
+					}
+				}
+			}
+		} else {
+			$output->writeln('<comment>No databases fetched in structure</comment>');
+		}
+
+		$output->writeln(PHP_EOL . '<bg=green;fg=black;options=bold>Migrations completed</>');
+	}
+
+	/**
+	 * Sets up the services for the Schematic application
+	 *
+	 * @param \Symfony\Component\Console\Input\InputInterface $input
+	 * @param \Symfony\Component\Console\Output\OutputInterface $output
+	 * @return \DI\Container
+	 */
+	protected function setServices(InputInterface $input, OutputInterface $output)
+	{
 		$di = ContainerBuilder::buildDevContainer();
+
+		$environment = $input->getArgument('env');
 
 		$di->set('config', function () use ($input, $di, $environment) {
 			return SchematicHelper::init([
@@ -71,34 +116,6 @@ class SchematicNewConsoleApp extends Command
 			return $this->getHelper('table');
 		});
 
-		$schematicStructure = new SchematicInterpretter();
-		$schematicStructure->setDi($di);
-
-		$databases = $schematicStructure->getDatabases();
-
-		if (count($databases) > 0) {
-			foreach ($databases as $databaseStructure) {
-				$database = new Database();
-
-				$database->setDi($di);
-
-				$database
-					->setName($databaseStructure['database']['general']['name'])
-					->setStructure($databaseStructure['database']['tables'])
-				;
-
-				if ($database->save()) {
-					$output->writeln('<green>Finished updating database</green>');
-				} else {
-					foreach ($database->getMessages() as $message) {
-						$output->writeln('<error>' . $message['content'] . '</error>');
-					}
-				}
-			}
-		} else {
-			$output->writeln('<comment>No databases fetched in structure</comment>');
-		}
-
-		$output->writeln(PHP_EOL . '<bg=green;fg=black;options=bold>Migrations completed</>');
+		return $di;
 	}
 }

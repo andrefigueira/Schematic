@@ -24,6 +24,21 @@ class Table extends AbstractTable
 	protected $name;
 
 	/**
+	 * @var string
+	 */
+	protected $charset;
+
+	/**
+	 * @var string
+	 */
+	protected $collation;
+
+	/**
+	 * @var string
+	 */
+	protected $engine;
+
+	/**
 	 * @var array
 	 */
 	protected $structure;
@@ -67,6 +82,63 @@ class Table extends AbstractTable
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getCharset()
+	{
+		return $this->charset;
+	}
+
+	/**
+	 * @param string $charset
+	 * @return $this
+	 */
+	public function setCharset($charset)
+	{
+		$this->charset = $charset;
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCollation()
+	{
+		return $this->collation;
+	}
+
+	/**
+	 * @param string $collation
+	 * @return $this
+	 */
+	public function setCollation($collation)
+	{
+		$this->collation = $collation;
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getEngine()
+	{
+		return $this->engine;
+	}
+
+	/**
+	 * @param string $engine
+	 * @return $this
+	 */
+	public function setEngine($engine)
+	{
+		$this->engine = $engine;
+
+		return $this;
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getStructure()
@@ -85,6 +157,11 @@ class Table extends AbstractTable
 		return $this;
 	}
 
+	/**
+	 * Perform the table synchronization
+	 *
+	 * @throws \Library\Schematic\Exceptions\SchematicApplicationException
+	 */
 	public function save()
 	{
 		if ($this->getName() === null) {
@@ -100,8 +177,17 @@ class Table extends AbstractTable
 		// Check if table name exists to begin with
 		if ($this->exists()) {
 			$output->writeln('<comment>Table: ' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getName() . ' exists</comment>');
+
+			if ($this->update()) {
+				$output->writeln('<info>Table: ' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getName() . ' has been updated</info>');
+			} else {
+				throw new SchematicApplicationException('Unable to update table ' . $this->getDatabaseName() . ':' . $this->getName());
+			}
 		} else {
-			$output->writeln('<error>Table: ' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getName() . ' does not exist</error>');
+			if ($output->isVerbose()) {
+				$output->writeln('<error>Table: ' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getName() . ' does not exist</error>');
+			}
+
 			if ($this->create()) {
 				$output->writeln('<info>Table: ' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getName() . ' has been created</info>');
 			} else {
@@ -109,11 +195,9 @@ class Table extends AbstractTable
 			}
 		}
 
-		$output->writeln('<info>-- Running table synchronisation</info>');
+		$output->writeln(PHP_EOL . '<fg=black;bg=green;options=bold;>Running table synchronisation</>' . PHP_EOL);
 
 		$iteration = 0;
-
-		$tableModifications = [];
 
 		foreach ($this->getStructure()['fields'] as $fieldName => $fieldStructure) {
 			$field = new Field();
@@ -146,6 +230,9 @@ class Table extends AbstractTable
 		$output->writeln('<bg=green;fg=black;options=bold>Finished running table synchronisation</>');
 	}
 
+	/**
+	 * Deletes fields which are not in the Schema file
+	 */
 	public function clearUnschemedFields()
 	{
 		$db = $this->getDb();

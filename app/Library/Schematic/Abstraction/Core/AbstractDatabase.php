@@ -12,6 +12,9 @@ abstract class AbstractDatabase extends AbstractDatabaseItem
 {
 	public function exists()
 	{
+		// Set the PDO error mode
+		$this->getDb()->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
 		$databaseName = $this->getName();
 
 		$query = '
@@ -32,7 +35,22 @@ abstract class AbstractDatabase extends AbstractDatabaseItem
 
 	public function create()
 	{
-		$query = 'CREATE DATABASE IF NOT EXISTS `' . $this->getName() . '`';
+		$query = '
+		CREATE DATABASE IF NOT EXISTS `' . $this->getName() . '`
+		CHARACTER SET ' . $this->getCharset() . ' COLLATE ' . $this->getCollation() . ';
+		';
+
+		$statement = $this->getDb()->prepare($query);
+
+		return $statement->execute();
+	}
+
+	public function update()
+	{
+		$query = '
+		ALTER DATABASE `' . $this->getName() . '`
+		CHARACTER SET ' . $this->getCharset() . ' COLLATE ' . $this->getCollation() . ';
+		';
 
 		$statement = $this->getDb()->prepare($query);
 

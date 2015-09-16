@@ -20,6 +20,21 @@ class Database extends AbstractDatabase
 	protected $name;
 
 	/**
+	 * @var string
+	 */
+	protected $charset;
+
+	/**
+	 * @var string
+	 */
+	protected $collation;
+
+	/**
+	 * @var string
+	 */
+	protected $engine;
+
+	/**
 	 * @var array
 	 */
 	protected $structure;
@@ -41,6 +56,63 @@ class Database extends AbstractDatabase
 	public function setName($name)
 	{
 		$this->name = $name;
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCharset()
+	{
+		return $this->charset;
+	}
+
+	/**
+	 * @param string $charset
+	 * @return $this
+	 */
+	public function setCharset($charset)
+	{
+		$this->charset = $charset;
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCollation()
+	{
+		return $this->collation;
+	}
+
+	/**
+	 * @param string $collation
+	 * @return $this
+	 */
+	public function setCollation($collation)
+	{
+		$this->collation = $collation;
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getEngine()
+	{
+		return $this->engine;
+	}
+
+	/**
+	 * @param string $engine
+	 * @return $this
+	 */
+	public function setEngine($engine)
+	{
+		$this->engine = $engine;
 
 		return $this;
 	}
@@ -87,8 +159,15 @@ class Database extends AbstractDatabase
 		// Check if DB name exists to begin with
 		if ($this->exists()) {
 			$output->writeln('<comment>Database: ' . $this->getName() . ' exists</comment>');
+
+			if ($this->update()) {
+				$output->writeln('<info>Database: ' . $this->getName() . ' has been updated</info>');
+			} else {
+				throw new SchematicApplicationException('Unable to update database ' . $this->getName() . ': ');
+			}
 		} else {
 			$output->writeln('<error>Database: ' . $this->getName() . ' does not exist</error>');
+
 			if ($this->create()) {
 				$output->writeln('<info>Database: ' . $this->getName() . ' has been created</info>');
 			} else {
@@ -107,6 +186,9 @@ class Database extends AbstractDatabase
 			$table
 				->setDatabaseName($this->getName())
 				->setName($tableName)
+				->setCharset($this->getCharset())
+				->setCollation($this->getCollation())
+				->setEngine($this->getEngine())
 				->setStructure($tableStructure)
 			;
 

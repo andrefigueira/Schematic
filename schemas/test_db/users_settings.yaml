@@ -30,3 +30,6 @@ database:
                 created_date:
                     type: datetime
                     'null': false
+                created_date_2:
+                    type: varchar(128)
+                    'null': false

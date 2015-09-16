@@ -52,8 +52,6 @@ abstract class AbstractField extends AbstractDatabaseItem
 
 	public function update()
 	{
-		$this->getDb()->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
-
 		$structure = $this->getStructure();
 
 		$query = '

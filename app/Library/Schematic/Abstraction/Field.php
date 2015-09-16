@@ -133,15 +133,19 @@ class Field extends AbstractField
 
 		// Check if field name exists to begin with
 		if ($this->exists()) {
-			$output->writeln('<comment>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') exists</comment>');
+			if ($output->isVerbose()) {
+				$output->writeln('<comment>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') exists</comment>');
+			}
 
 			if ($this->update()) {
-				$output->writeln('<info>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') has been modified</info>');
+				$output->writeln('<info>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') has been updated</info>');
 			} else {
 				throw new SchematicApplicationException('Unable to modify field ' . $this->getDatabaseName() . ':' . $this->getTableName() . ':' . $this->getName());
 			}
 		} else {
-			$output->writeln('<error>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') does not exist</error>');
+			if ($output->isVerbose()) {
+				$output->writeln('<error>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') does not exist</error>');
+			}
 
 			if ($this->create()) {
 				$output->writeln('<info>---- Field: (' . $this->getDatabaseName() . Database::VISUAL_CONNECTOR . $this->getTableName() . Database::VISUAL_CONNECTOR . $this->getName() . ') has been created</info>');
@@ -150,7 +154,9 @@ class Field extends AbstractField
 			}
 		}
 
-		$output->writeln(PHP_EOL . '<fg=black;bg=green>---- Finished running field synchronisation</>');
+		if ($output->isVerbose()) {
+			$output->writeln(PHP_EOL . '<fg=black;bg=green>---- Finished running field synchronisation</>');
+		}
 
 		return true;
 	}

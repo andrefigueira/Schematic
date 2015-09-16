@@ -4,9 +4,9 @@ schematic:
 database:
     general:
         name: test_db
-        charset: latin1
-        collation: latin1_swedish_ci
-        engine: InnoDB
+        charset: utf8
+        collation: utf8_general_ci
+        engine: InnoDb
     tables:
         users:
             fields:

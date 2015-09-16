@@ -31,12 +31,36 @@ abstract class AbstractTable extends AbstractDatabaseItem
 		return (bool) $statement->rowCount();
 	}
 
+	/**
+	 * Creates an initial table with an tmp field, this is a temporary field to allow the table creation
+	 *
+	 * @return bool
+	 */
 	public function create()
 	{
 		$query = '
 		CREATE TABLE `' . $this->getName() . '` (
-  			`id` int(11) unsigned NOT NULL
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  			`tmp` int(11) unsigned NOT NULL
+		) ENGINE=' . $this->getEngine() . ' DEFAULT CHARSET=' . $this->getCharset() . ' COLLATION=' . $this->getCollation() . ';
+		';
+
+		$statement = $this->getDb()->prepare($query);
+
+		return $statement->execute();
+	}
+
+	/**
+	 * Updates the tables charset and collation
+	 *
+	 * @return bool
+	 */
+	public function update()
+	{
+		$query = '
+		ALTER TABLE `' . $this->getName() . '`
+  		CHARACTER SET ' . $this->getCharset() . ',
+  		COLLATE ' . $this->getCollation() . ',
+  		ENGINE=' . $this->getEngine() . ';
 		';
 
 		$statement = $this->getDb()->prepare($query);
