@@ -1,5 +1,8 @@
 ## Schematic - Database Migrations Tool
 
+# NO LONGER MAINTAINED
+### Due to the fact that Schematic was never truly fully completed with all the features I wanted it to have, I'm shelving it for the time being, if anyone would like to become the new active contributer let me know. However I've now moved on to Laravel as my main framework and Laravel migrations have now taken over from Schematic.
+
 A database migrations tool, allows for easy database maintenance in a way that is easy to setup in a continuous integration environment.
 
 [![Build Status](https://travis-ci.org/andrefigueira/Schematic.svg?branch=master)](https://travis-ci.org/andrefigueira/Schematic)
